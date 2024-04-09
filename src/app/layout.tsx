@@ -5,7 +5,7 @@ import { MantineProvider, ColorSchemeScript } from '@mantine/core';
 
 
 export const metadata = {
-  title: 'AP-Stock',
+  title: 'APP-Stock',
 };
 
 export default function RootLayout({ children }: { children: any }) {
