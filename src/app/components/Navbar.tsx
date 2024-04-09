@@ -8,14 +8,19 @@ import {
   Text,
 } from "@mantine/core";
 
+import classes from '@css/HeaderSimple.module.css';
+
 function Navbar() {
   return (
-    <AppShell c={"myblue"} >
-      <Container bg="#070b91" fluid py={5}>
+    
+    //add box shadow
+    <header>
+      <Container bg="#070b91" fluid py={5}  style={{ boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.5)" }} >
         <Center>
-        <Text size="lg" c={"myred"} bg={"myblue"} fw={700} style={{ textShadow: "1px 0 0 white , 0 1px 0 white , -1px 0 0 white , 0 -1px 0 white"   }}>{"Ap - Stock"}</Text>        </Center>
+        <div className={classes.stroke}>Ap - Stock</div>
+        </Center>
       </Container>
-    </AppShell>
+      </header>
   );
 }
 

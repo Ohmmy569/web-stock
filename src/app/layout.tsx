@@ -23,13 +23,11 @@ export const metadata = {
 
 
 const theme = createTheme({
-  primaryColor: "blue",
+  primaryColor: "myblue",
   primaryShade: 7,
   defaultRadius: "md",
-  fontFamily: "Jost, sans-serif",
-  headings: {
-    fontFamily: "Jost, sans-serif",
-  },
+  
+  fontFamily: "Arial , sans-serif",
   colors: {
     'myblue': ['#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91'],
     'myred': ['#de0020', '#de0020' ,
