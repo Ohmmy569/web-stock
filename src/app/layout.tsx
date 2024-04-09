@@ -1,14 +1,56 @@
 //layout.tsx
+
 import '@mantine/core/styles.css';
 import React from 'react';
-import { MantineProvider, ColorSchemeScript } from '@mantine/core';
+
+import { MantineProvider, ColorSchemeScript, createTheme, Container } from '@mantine/core';
+import { ModalsProvider } from "@mantine/modals";
+import { Notifications } from "@mantine/notifications";
+import Navbar from "@components/Navbar"
+
+
+
+import "@mantine/core/styles.css";
+import "@mantine/dropzone/styles.css";
+import "@mantine/notifications/styles.css";
 
 
 export const metadata = {
-  title: 'APP-Stock',
+  title: 'AP-Stock',
 };
 
+
+
+
+const theme = createTheme({
+  primaryColor: "blue",
+  primaryShade: 7,
+  defaultRadius: "md",
+  fontFamily: "Jost, sans-serif",
+  headings: {
+    fontFamily: "Jost, sans-serif",
+  },
+  colors: {
+    'myblue': ['#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91'],
+    'myred': ['#de0020', '#de0020' ,
+    '#de0020',
+    '#de0020',
+    '#de0020',
+    '#de0020',
+    '#de0020',
+    '#de0020',
+    '#de0020',
+    '#de0020'],
+   
+ 
+  },
+  
+});
+
 export default function RootLayout({ children }: { children: any }) {
+
+  
+
   return (
     <html lang="en">
       <head>
@@ -20,7 +62,12 @@ export default function RootLayout({ children }: { children: any }) {
         />
       </head>
       <body>
-        <MantineProvider>{children}</MantineProvider>
+      <MantineProvider theme={theme} defaultColorScheme="light">
+            <Notifications />
+            <ModalsProvider>
+            <Navbar/>
+              {children}</ModalsProvider>
+          </MantineProvider>
       </body>
     </html>
   );
