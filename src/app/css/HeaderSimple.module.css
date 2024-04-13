@@ -3,6 +3,7 @@
     font-weight: 900;
     text-align: center;
     color: #de0020;
-    -webkit-text-stroke: 1.2px #fff;
+    -webkit-text-stroke: 1.2px #ffffff;
+    text-shadow: 1px 1px 1px #000000;
   
 }

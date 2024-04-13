@@ -12,8 +12,7 @@ import classes from '@css/HeaderSimple.module.css';
 
 function Navbar() {
   return (
-    
-    //add box shadow
+  
     <header>
       <Container bg="#070b91" fluid py={5}  style={{ boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.5)" }} >
         <Center>
