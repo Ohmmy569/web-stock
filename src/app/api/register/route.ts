@@ -1,19 +1,28 @@
-import { NextResponse } from "next/server";
-import { connectDB } from "../../../../lib/mongodb";
-import User from "../../../../models/user";
-import bcrypt from "bcryptjs";
+// pages/api/firestore.ts
 
+import { NextResponse, NextRequest } from 'next/server';
+import admin from 'firebase-admin';
 
-export async function POST(req: Request) {
+// ตั้งค่า Firebase Admin
+import serviceAccount from "../../../../serviceAccountKey.json";
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+    databaseURL: 'YOUR_DATABASE_URL' // เปลี่ยนเป็น URL ของ Firebase Firestore ของคุณ
+  });
+}
+
+// เชื่อมต่อกับ Firestore
+const db = admin.firestore();
+
+export async function GET() {
   try {
-    const { username, password } = await req.json();
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // ทำอะไรกับ Firestore ได้ตรงนี้
 
-    await connectDB();
-    await User.create({ username, password: hashedPassword });
-
-    return NextResponse.json({ message: "success" }, { status: 201 });
+   return NextResponse.json({ success: true , message: 'Data saved successfully'});
   } catch (error) {
-    return NextResponse.json({ message: "error" }, { status: 400 });
+    console.error('Error:', error);
+    return NextResponse.json({ success: false , message: 'An error occurred while saving data'});
   }
 }

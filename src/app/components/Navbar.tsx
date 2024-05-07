@@ -10,11 +10,11 @@ import {
 
 import classes from '@css/HeaderSimple.module.css';
 
-function Navbar() {
+const Navbar = () => {
   return (
   
     <header>
-      <Container bg="#070b91" fluid py={5}  style={{ boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.5)" }} >
+      <Container bg="#070b91" fluid py={5} mb={25}  style={{ boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.5)" }} >
         <Center>
         <div className={classes.stroke}>Ap - Stock</div>
         </Center>

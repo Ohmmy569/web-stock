@@ -1,54 +1,61 @@
 //layout.tsx
 
-import '@mantine/core/styles.css';
-import React from 'react';
+import "@mantine/core/styles.css";
+import React from "react";
 
-import { MantineProvider, ColorSchemeScript, createTheme, Container } from '@mantine/core';
+import {
+  MantineProvider,
+  ColorSchemeScript,
+  createTheme,
+  Container,
+} from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
-import Navbar from "@components/Navbar"
-
-
+import Navbar from "@components/Navbar";
 
 import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
 import "@mantine/notifications/styles.css";
 
-
 export const metadata = {
-  title: 'AP-Stock',
+  title: "AP-Stock",
 };
-
-
-
 
 const theme = createTheme({
   primaryColor: "myblue",
   primaryShade: 7,
   defaultRadius: "md",
-  
+
   fontFamily: "Arial , sans-serif",
   colors: {
-    'myblue': ['#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91', '#070b91'],
-    'myred': ['#de0020', '#de0020' ,
-    '#de0020',
-    '#de0020',
-    '#de0020',
-    '#de0020',
-    '#de0020',
-    '#de0020',
-    '#de0020',
-    '#de0020'],
-   
- 
+    myblue: [
+      "#070b91",
+      "#070b91",
+      "#070b91",
+      "#070b91",
+      "#070b91",
+      "#070b91",
+      "#070b91",
+      "#070b91",
+      "#070b91",
+      "#070b91",
+    ],
+    myred: [
+      "#de0020",
+      "#de0020",
+      "#de0020",
+      "#de0020",
+      "#de0020",
+      "#de0020",
+      "#de0020",
+      "#de0020",
+      "#de0020",
+      "#de0020",
+    ],
   },
-  
 });
 
 export default function RootLayout({ children }: { children: any }) {
-
-  
-
   return (
     <html lang="en">
       <head>
@@ -60,12 +67,13 @@ export default function RootLayout({ children }: { children: any }) {
         />
       </head>
       <body>
-      <MantineProvider theme={theme} defaultColorScheme="light">
-            <Notifications />
-            <ModalsProvider>
-            <Navbar/>
-              {children}</ModalsProvider>
-          </MantineProvider>
+        <MantineProvider theme={theme} defaultColorScheme="light">
+          <Notifications />
+          <ModalsProvider>
+            <Navbar />
+            {children}
+          </ModalsProvider>
+        </MantineProvider>
       </body>
     </html>
   );
