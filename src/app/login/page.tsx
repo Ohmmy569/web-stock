@@ -3,6 +3,7 @@ import React, { use, useEffect } from "react";
 import { useForm } from "@mantine/form";
 import { zodResolver } from "mantine-form-zod-resolver";
 
+
 import { z } from "zod";
 import {
   Card,
@@ -16,6 +17,7 @@ import {
   rem,
   PasswordInput,
   Text,
+  Image
 } from "@mantine/core";
 
 type account = {
@@ -69,10 +71,22 @@ export default function Page() {
               })();
             }}
           >
-            <Box>
-              <Text fw={700} fz={30} ta="center" mb="md">
-                Login
-              </Text>
+            <Card.Section
+            >
+             <Image
+     
+      alt="Banner"
+      w="100%"
+      h={290}
+      radius="md"
+
+  
+      src="/banner.png"
+      m={0}
+    />
+    </Card.Section>
+            <Box mt={20}>
+           
               <TextInput
                 label="ชื่อผู้ใช้"
                 placeholder="กรอกชื่อผู้ใช้งาน"

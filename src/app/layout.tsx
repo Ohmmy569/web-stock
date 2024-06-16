@@ -70,7 +70,7 @@ export default function RootLayout({ children }: { children: any }) {
         <MantineProvider theme={theme} defaultColorScheme="light">
           <Notifications />
           <ModalsProvider>
-            <Navbar />
+            {/* <Navbar /> */}
             {children}
           </ModalsProvider>
         </MantineProvider>
