@@ -11,7 +11,7 @@ import {
 } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
-import Navbar from "@components/Navbar";
+import BasicAppShell from "@components/Navbar";
 
 import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
@@ -66,11 +66,16 @@ export default function RootLayout({ children }: { children: any }) {
           content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
         />
       </head>
-      <body>
+      <body style={
+        { 
+          backgroundColor: "#F5F5F5",
+        }
+      
+      }>
         <MantineProvider theme={theme} defaultColorScheme="light">
           <Notifications />
           <ModalsProvider>
-            {/* <Navbar /> */}
+            
             {children}
           </ModalsProvider>
         </MantineProvider>
