@@ -2,7 +2,7 @@ import React, { use, useEffect } from "react";
 import { useState } from "react";
 import { User } from "../type";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
-import { db } from "@/../firebase";
+import { db } from "@/app/firebase/firebase"
 import {
   ActionIcon,
   Button,
