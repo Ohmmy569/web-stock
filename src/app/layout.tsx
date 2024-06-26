@@ -16,6 +16,7 @@ import BasicAppShell from "@components/Navbar";
 import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
 import "@mantine/notifications/styles.css";
+import SessionProvider from "./SessionProvider";
 
 export const metadata = {
   title: "AP-Stock",
@@ -66,19 +67,17 @@ export default function RootLayout({ children }: { children: any }) {
           content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
         />
       </head>
-      <body style={
-        { 
+      <body
+        style={{
           backgroundColor: "#F5F5F5",
-        }
-      
-      }>
-        <MantineProvider theme={theme} defaultColorScheme="light">
-          <Notifications />
-          <ModalsProvider>
-            
-            {children}
-          </ModalsProvider>
-        </MantineProvider>
+        }}
+      >
+        <SessionProvider>
+          <MantineProvider theme={theme} defaultColorScheme="light">
+            <Notifications />
+            <ModalsProvider>{children}</ModalsProvider>
+          </MantineProvider>
+        </SessionProvider>
       </body>
     </html>
   );

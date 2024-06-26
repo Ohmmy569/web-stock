@@ -1,9 +1,16 @@
-import React from 'react'
+"use client";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useSession, signOut } from "next-auth/react";
+import UserTable from "@/app/components/UserTable";
 
-function page() {
-  return (
-    <div>PART</div>
+export default function page() {
+  return(
+    <div>
+      <h1>Dashboard</h1>
+      <button onClick={() => signOut()}>Sign out</button>
+    </div>
   )
 }
 
-export default page
+page.requiredAuth = true;

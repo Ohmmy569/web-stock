@@ -2,8 +2,9 @@
 import React, { use, useEffect } from "react";
 import { useForm } from "@mantine/form";
 import { zodResolver } from "mantine-form-zod-resolver";
-
-
+import { signIn, signOut } from "next-auth/react";
+import { auth } from "@/app/firebase/firebase";
+import { useRouter } from "next/navigation";
 import { z } from "zod";
 import {
   Card,
@@ -17,8 +18,11 @@ import {
   rem,
   PasswordInput,
   Text,
-  Image
+  Image,
+  Notification,
 } from "@mantine/core";
+import { IconX, IconCheck } from "@tabler/icons-react";
+import { showNotification } from "@mantine/notifications";
 
 type account = {
   username: string;
@@ -26,13 +30,16 @@ type account = {
 };
 
 export default function Page() {
+  const xIcon = <IconX style={{ width: rem(20), height: rem(20) }} />;
+  const checkIcon = <IconCheck style={{ width: rem(20), height: rem(20) }} />;
+
   const schema = z.object({
     username: z.string().nonempty({ message: "กรุณากรอกชื่อผู้ใช้งาน" }),
-    password: z.string().nonempty({ message: "กรุณากรอกรหัสผ่าน" }),
+    password: z
+      .string()
+      .nonempty({ message: "กรุณากรอกรหัสผ่าน" })
+      .min(6, { message: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" }),
   });
-
-
-
 
   const form = useForm({
     initialValues: {
@@ -42,20 +49,53 @@ export default function Page() {
     validate: zodResolver(schema),
   });
 
-  const handlesubmit = async (data: account) => {
-    try{
-    const response = await fetch("/api/register", {
-      method: "POST",
+  //register
+  // const [createUserWithEmailAndPassword] = useCreateUserWithEmailAndPassword(auth);
+  // const handlesubmit = async (data: account) => {
+  //   try {
+  //     const response = await createUserWithEmailAndPassword(data.username, data.password);
+  //     console.log("User created successfully:", response);
+  //   } catch (error) {
+  //     console.error("An unexpected error happened:", error);
+  //   }
+  // };
 
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-  }
-  catch (error) {
-    console.error("An unexpected error happened:", error);
-  }
+  const router = useRouter();
+  const handlesubmit = async (data: account) => {
+    try {
+      const username = data.username + "@gmail.com";
+      const password = data.password;
+      const response = await signIn("credentials", {
+        username,
+        password,
+        redirect: false,
+        callbackUrl: "/dashboard",
+      });
+
+      if (response?.error) {
+        showNotification({
+          title: "เข้าสู่ระบบไม่สำเร็จ",
+          message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+          color: "red",
+          icon: xIcon,
+        });
+      } else {
+        showNotification({
+          title: "เข้าสู่ระบบสำเร็จ",
+          message: "ยินดีต้อนรับเข้าสู่ระบบ",
+          color: "green",
+          icon: checkIcon,
+        });
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      showNotification({
+        title: "เข้าสู่ระบบไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดระหว่างเข้าสู่ระบบ",
+        color: "yellow",
+        icon: xIcon,
+      });
+    }
   };
 
   return (
@@ -71,22 +111,17 @@ export default function Page() {
               })();
             }}
           >
-            <Card.Section
-            >
-             <Image
-     
-      alt="Banner"
-      w="100%"
-      h={290}
-      radius="md"
-
-  
-      src="/banner.png"
-      m={0}
-    />
-    </Card.Section>
+            <Card.Section>
+              <Image
+                alt="Banner"
+                w="100%"
+                h={260}
+                radius="md"
+                src="/banner.png"
+                m={0}
+              />
+            </Card.Section>
             <Box mt={20}>
-           
               <TextInput
                 label="ชื่อผู้ใช้"
                 placeholder="กรอกชื่อผู้ใช้งาน"
