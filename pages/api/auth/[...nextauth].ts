@@ -21,7 +21,7 @@ export const authOptions = {
           }
           return null;
         } catch (error : any) {
-          console.error("Error during sign-in:", error.code, error.message);
+        
           throw new Error(JSON.stringify({ code: error.code, message: error.message }));
         }
       }

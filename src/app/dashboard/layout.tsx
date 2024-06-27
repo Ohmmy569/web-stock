@@ -86,28 +86,28 @@ export default function DashboardLayout({
     },
   ];
 
-  
-
   const handleClick = (event: any, index: any) => {
     router.push(data[index].link);
     event.preventDefault();
   };
 
   const pathname = usePathname();
-  const UserEmail = session?.user?.email;
-  const name = UserEmail?.split("@")[0];
-  const ThisUser = users?.find((user: User) => user.email === UserEmail) as User;
-  console.log("ThisUser", ThisUser);
-  
-  if(ThisUser.role === "admin"){
-    data.push({
-      link: "/dashboard/user",
-      label: "รายการผู้ใช้งาน",
-      icon: IconUser,
-    });
-  }
+
   if (status === "authenticated") {
-    console.log("User is authenticated", ThisUser);
+    const UserEmail = session?.user?.email;
+    const name = UserEmail?.split("@")[0];
+    const ThisUser = users?.find(
+      (user: User) => user.email === UserEmail
+    ) as User;
+
+    if (ThisUser?.role === "admin") {
+      data.push({
+        link: "/dashboard/user",
+        label: "รายการผู้ใช้งาน",
+        icon: IconUser,
+      });
+    }
+
     return (
       <section>
         <AppShell
@@ -164,7 +164,6 @@ export default function DashboardLayout({
                     />
                   );
                 })}
-              
               </Box>
             </AppShell.Section>
             <AppShell.Section pb={5}>

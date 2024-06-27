@@ -49,16 +49,6 @@ export default function Page() {
     validate: zodResolver(schema),
   });
 
-  //register
-  // const [createUserWithEmailAndPassword] = useCreateUserWithEmailAndPassword(auth);
-  // const handlesubmit = async (data: account) => {
-  //   try {
-  //     const response = await createUserWithEmailAndPassword(data.username, data.password);
-  //     console.log("User created successfully:", response);
-  //   } catch (error) {
-  //     console.error("An unexpected error happened:", error);
-  //   }
-  // };
 
   const router = useRouter();
   const handlesubmit = async (data: account) => {
