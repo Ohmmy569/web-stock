@@ -4,10 +4,10 @@ import { useEffect } from "react";
 
 import { useSession } from "next-auth/react";
 
-function page() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
 
+function Page() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
@@ -19,4 +19,4 @@ function page() {
   }
 }
 
-export default page;
+export default Page;

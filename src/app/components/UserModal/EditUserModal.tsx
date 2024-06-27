@@ -68,22 +68,18 @@ const EditUserModal: React.FC<ModalProps> = ({
   });
 
   useEffect(() => {
-  form.setValues({
-    username: users?.email || "",
-    password: users?.password || "",
-    role: users?.role || "",
-  });
-    }, [users]);
-    
+    form.setValues({
+      username: users?.email || "",
+      password: users?.password || "",
+      role: users?.role || "",
+    });
+  }, [users]);
 
-
-  console.log("EDit : ", users);
-
-  
-   function onClosed() {
+  function onClosed() {
     onClose();
     form.reset();
-    }
+  }
+  
 
   const handlesubmit = async (data: any, users: User[]) => {
     //leave this for now
@@ -97,8 +93,6 @@ const EditUserModal: React.FC<ModalProps> = ({
             form.reset();
           })();
         }}
-
-    
       >
         <Box>
           <TextInput
@@ -106,7 +100,6 @@ const EditUserModal: React.FC<ModalProps> = ({
             placeholder="กรอกชื่อผู้ใช้งาน"
             mb={"xs"}
             {...form.getInputProps("username")}
-
           />
           <TextInput
             label="รหัสผ่าน"

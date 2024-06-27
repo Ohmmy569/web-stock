@@ -30,7 +30,6 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { User } from "@/app/type";
-import { time } from "console";
 
 interface ModalProps {
   opened: boolean;
@@ -45,7 +44,6 @@ const AddUserModal: React.FC<ModalProps> = ({
   title,
   users,
 }) => {
-  console.log("USERRRRSS", users);
 
   const schema = z.object({
     username: z.string().nonempty({ message: "กรุณากรอกชื่อผู้ใช้งาน" }),
@@ -87,7 +85,6 @@ const AddUserModal: React.FC<ModalProps> = ({
 
       const username = data.username + "@gmail.com";
       const user = users.find((user) => user.email === username);
-      console.log("user", user);
 
       if (user) {
         showNotification({
@@ -109,6 +106,7 @@ const AddUserModal: React.FC<ModalProps> = ({
         const docRef = await addDoc(CollectionRef, {
           email: username,
           role: data.role,
+          password: password,
           timestamp: serverTimestamp(),
         });
 

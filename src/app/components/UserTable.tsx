@@ -37,6 +37,7 @@ import AddUserModal from "@components/UserModal/AddUserModal";
 import EditUserModal from "./UserModal/EditUserModal";
 import { modals } from "@mantine/modals";
 import { set } from "zod";
+import { showNotification } from "@mantine/notifications";
 
 
 const UserTable = () => {
@@ -64,7 +65,11 @@ const UserTable = () => {
       });
       return unsubscribe;
     } catch (error: any) {
-      console.error("Error getting documents: ", error);
+      showNotification({
+        title: "Failed to fetch users",
+        message: error.message,
+        color: "red",
+      });
     }
   }, []);
 
@@ -122,7 +127,11 @@ const UserTable = () => {
       
     }
     catch (error: any) {
-      console.error("Error removing document: ", error);
+      showNotification({
+        title: "Failed to delete user",
+        message: error.message,
+        color: "red",
+      });
     }
   }
 
