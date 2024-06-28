@@ -21,6 +21,7 @@ import {
   IconEngine,
   IconPackageExport,
   IconPackageImport,
+  IconArticleFilled,
 } from "@tabler/icons-react";
 import cx from "clsx";
 import classes from "./TableScrollArea.module.css";
@@ -37,53 +38,34 @@ import {
 
 import { db } from "../firebase/firebase";
 import { useDisclosure } from "@mantine/hooks";
-import { car } from "../type";
 
 import AddPartModal from "@components/PartModal/AddPartModal";
-import EditPartModal from "@components/PartModal/EditPartModal";
-import RestockPartModal from "@components/PartModal/RestockPart";
-import OutStockPartModal from "./PartModal/OutStockPart";
+// import EditPartModal from "./PartModal/EditPartModal";
 import { modals } from "@mantine/modals";
-import { set } from "zod";
 import { showNotification } from "@mantine/notifications";
+import { PartType } from "../type";
 
 function removeDuplicates(arr: any[]) {
   return arr.filter((item, index) => arr.indexOf(item) === index);
 }
 
-const PartTable = () => {
-  const [Parts, setParts] = useState([] as any[] | undefined);
-  const [Cars, setCars] = useState(car as Car[] | undefined);
-  const [PartCode, setPartCode] = useState([] as any[] | undefined);
-  const [TypeofParts, setTypeofParts] = useState([] as any[] | undefined);
+const PartHistoryTable = () => {
+  const [PartType, setPartType] = useState([] as any[] | undefined);
+
   const [search, setSearch] = useState("");
   const [scrolled, setScrolled] = useState(false);
-  const [editPart, setEditPart] = useState<Part>({} as Part);
+  const [editPart, setEditPart] = useState({} as Part);
   const [brand, setBrand] = useState("all");
   const [typeofparts, setTypeofparts] = useState("all");
-  const [EditPartName, setEditPartName] = useState([] as any[] | undefined);
-  const [EditCode, setEditCode] = useState("");
-  const [RestockPart, setRestockPart] = useState<Part>({} as Part);
 
   const [Addopened, { open: openAdd, close: closeAdd }] = useDisclosure(false);
   const [Editopened, { open: openEdit, close: closeEdit }] =
     useDisclosure(false);
 
-  const [Restockopened, { open: openRestock, close: closeRestock }] = useDisclosure(false);
-  const [OutStockopened, { open: openOutStock, close: closeOutStock }] = useDisclosure(false);
-
   useEffect(() => {
-    const unsubscribeParts = queryCollection("parts", setParts);
-    const unsubscribeTypeofParts = queryCollection(
-      "typeofparts",
-      setTypeofParts
-    );
-    const unsubscribeCode = queryCollection("partCode", setPartCode);
-
+    // const unsubscribePartsType = queryCollection("typeofparts", setPartType);
     return () => {
-      unsubscribeParts();
-      unsubscribeTypeofParts();
-      unsubscribeCode();
+    //   unsubscribePartsType();
     };
   }, []);
 
@@ -113,47 +95,21 @@ const PartTable = () => {
     }
   };
 
-  const ModalCars = Cars;
-  const ModalcarBrand = removeDuplicates(
-    Cars?.map((Car: Car) => Car.brand) as string[]
-  );
-  const modalPartName = Parts?.map((Part: Part) => Part.name) as string[];
-  const ModalTypeofParts = TypeofParts?.map(
-    (TypeofPart: any) => TypeofPart.name
-  ) as string[];
-  const modalCode = PartCode;
-  let modalEditPartName = Parts?.map((Part: Part) => Part.name) as string[];
-
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    //remove space
     let value = event.target.value.replace(/\s/g, "");
     setSearch(value);
   };
 
-  const filteredParts = Parts?.filter((Part: Part) => {
+  const filteredParts = PartType?.filter((Part: Part) => {
     const searchFields = Object.values(Part).join("").toLowerCase();
 
-    return (
-      searchFields.includes(search.toLowerCase()) &&
-      (brand === "all" || Part.brand === brand) &&
-      (typeofparts === "all" || Part.type === typeofparts)
-    );
+    return searchFields.includes(search.toLowerCase());
   });
 
   function OpenEdit(Part: Part) {
     setEditPart(Part);
-    setEditCode(Part.code);
-    setEditPartName(modalEditPartName.filter((name) => name !== Part.name));
     openEdit();
-  }
-
-  function OpenRestock(Part: Part) {
-    setRestockPart(Part);
-    openRestock();
-  }
-
-  function OpenOutStock(Part: Part) {
-    setRestockPart(Part);
-    openOutStock();
   }
 
   const openDeleteModal = (PartId: any, Partname: any) => {
@@ -177,19 +133,7 @@ const PartTable = () => {
 
   const rows = filteredParts?.map((Part: Part) => (
     <Table.Tr key={Part.id}>
-      <Table.Td ta="center">{Part.code}</Table.Td>
       <Table.Td ta="center">{Part.name}</Table.Td>
-      <Table.Td ta="center">{Part.type}</Table.Td>
-
-      <Table.Td ta="center">{Part.brand}</Table.Td>
-      <Table.Td ta="center">{Part.model}</Table.Td>
-      <Table.Td ta="center">
-        <NumberFormatter thousandSeparator suffix=" ฿" value={Part.costPrice} />
-      </Table.Td>
-      <Table.Td ta="center">
-        <NumberFormatter thousandSeparator suffix=" ฿" value={Part.salePrice} />
-      </Table.Td>
-      <Table.Td ta="center">{Part.amount}</Table.Td>
       <Table.Td ta="center">
         <Group gap={"xs"}>
           <Tooltip label="แก้ไข">
@@ -211,24 +155,6 @@ const PartTable = () => {
               }
             >
               <IconTrash />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label="เติมอ่ะไหล่">
-            <ActionIcon
-              variant="filled"
-              color="green.8"
-              onClick={() => OpenRestock(Part)}
-            >
-              <IconPackageImport />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label="เบิกอะไหล่">
-            <ActionIcon
-              variant="filled"
-              color="blue.8"
-              onClick={() => OpenOutStock(Part)}
-            >
-              <IconPackageExport />
             </ActionIcon>
           </Tooltip>
         </Group>
@@ -253,9 +179,9 @@ const PartTable = () => {
     <Stack align="stretch" justify="center" gap="md">
       <Group justify="space-between">
         <Group align="center" gap={5}>
-          <IconEngine size={25} />
+          <IconArticleFilled size={25} />
           <Text size="xl" fw={700}>
-            อ่ะไหล่รถยนต์
+            ประเภทอ่ะไหล่รถยนต์
           </Text>
         </Group>
         <Tooltip label="เพิ่มรายการอะไหล่">
@@ -265,7 +191,7 @@ const PartTable = () => {
             radius="md"
             onClick={() => openAdd()}
           >
-            เพิ่มรายการอะไหล่ใหม่
+            เพิ่มรายการประเภทอะไหล่
           </Button>
         </Tooltip>
       </Group>
@@ -283,24 +209,6 @@ const PartTable = () => {
           value={search}
           onChange={handleSearchChange}
         />
-        <Select
-          placeholder="เลือกประเภท"
-          label="เลือกประเภท"
-          data={[
-            { label: "ทั้งหมด", value: "all" },
-            ...ModalTypeofParts.map((type) => ({ label: type, value: type })),
-          ]}
-          onChange={(value) => setTypeofparts(value as string)}
-        />
-        <Select
-          placeholder="เลือกยี่ห้อรถยนต์"
-          data={[
-            { label: "ทั้งหมด", value: "all" },
-            ...ModalcarBrand.map((brand) => ({ label: brand, value: brand })),
-          ]}
-          label="เลือกยี่ห้อรถยนต์"
-          onChange={(value) => setBrand(value as string)}
-        />
       </Group>
 
       <Card shadow="xs" padding="md" radius="md" withBorder>
@@ -313,14 +221,9 @@ const PartTable = () => {
               className={cx(classes.header, { [classes.scrolled]: scrolled })}
             >
               <Table.Tr>
-                <Table.Th ta="center">รหัส</Table.Th>
-                <Table.Th ta="center">ชื่อ</Table.Th>
-                <Table.Th ta="center">ประเภท</Table.Th>
-                <Table.Th ta="center">ยี่ห้อรถยนต์</Table.Th>
-                <Table.Th ta="center">รุ่นรถยนต์</Table.Th>
-                <Table.Th ta="center">ราคาทุน</Table.Th>
-                <Table.Th ta="center">ราคาขาย</Table.Th>
-                <Table.Th ta="center">จำนวณ</Table.Th>
+        
+                <Table.Th ta="center">ชื่อประเภท</Table.Th>
+               
                 <Table.Th ta="center"> </Table.Th>
               </Table.Tr>
             </Table.Thead>
@@ -329,48 +232,25 @@ const PartTable = () => {
         </ScrollArea>
       </Card>
 
-      <AddPartModal
+      {/* <AddPartModal
         opened={Addopened}
         onClose={closeAdd}
-        title={<Text fw={900}> เพิ่มรายการอะไหล่ใหม่ </Text>}
+        title={<Text fw={900}> เพิ่มรายการอะไหล่ </Text>}
         partName={modalPartName}
         typeofPart={ModalTypeofParts}
         carBrand={ModalcarBrand}
         Cars={ModalCars}
         Code={modalCode}
-      />
-
+      /> */}
+      {/*
       <EditPartModal
         opened={Editopened}
         onClose={closeEdit}
-        title={
-          <Text fw={900}>
-            {" "}
-            แก้ไขอ่ะไหล่ <strong>{EditCode}</strong>{" "}
-          </Text>
-        }
-        EditPart={editPart}
-        partName={EditPartName}
-        typeofPart={ModalTypeofParts}
-        carBrand={ModalcarBrand}
-        Cars={ModalCars}
-      />
-      <RestockPartModal
-        opened={Restockopened}
-        onClose={closeRestock}
-        title={<Text fw={900}> เติมอะไหล่ {RestockPart.name} </Text>}
-        Part={RestockPart}
-      />
-      <OutStockPartModal 
-      opened={OutStockopened}
-      onClose={closeOutStock}
-      title={<Text fw={900}> เบิกอะไหล่ {RestockPart.name} </Text>}
-      Part={RestockPart}
-        
-      />
-
+        title={<Text fw={900}> แก้ไขผู้ใช้งาน </Text>}
+        Parts={editPart }
+      /> */}
     </Stack>
   );
 };
 
-export default PartTable;
+export default PartHistoryTable;

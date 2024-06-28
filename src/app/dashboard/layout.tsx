@@ -113,6 +113,9 @@ export default function DashboardLayout({
       (user: User) => user.email === UserEmail
     ) as User;
 
+    
+    const passname = name;
+
     if (ThisUser?.role === "admin") {
       data.push({
         link: "/dashboard/user",
@@ -192,7 +195,7 @@ export default function DashboardLayout({
                   className={classes.navlink}
                 />
                 <NavLink
-                  label={"ออกจากระบบ"}
+                  label={<strong>ออกจากระบบ</strong>}
                   leftSection={<IconLogout size="2rem" stroke={2} />}
                   onClick={() => signOut()}
                   color={"red"}

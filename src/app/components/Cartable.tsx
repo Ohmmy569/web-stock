@@ -108,7 +108,7 @@ const CarTable = () => {
       <Table.Td ta="center">{Car.brand}</Table.Td>
       <Table.Td ta="center">{Car.model}</Table.Td>
       <Table.Td ta="center">
-        <Tooltip label="แก้ไข">
+        {/* <Tooltip label="แก้ไข">
           <ActionIcon
             variant="filled"
             color="yellow.8"
@@ -126,7 +126,7 @@ const CarTable = () => {
           >
             <IconTrash />
           </ActionIcon>
-        </Tooltip>
+        </Tooltip> */}
       </Table.Td>
     </Table.Tr>
   ));
@@ -188,7 +188,7 @@ const CarTable = () => {
             รายการรถยนต์
           </Text>
         </Group>
-        <Tooltip label="เพิ่มผู้ใช้งาน">
+        {/* <Tooltip label="เพิ่มผู้ใช้งาน">
           <Button
             variant="filled"
             color="lime.8"
@@ -197,7 +197,7 @@ const CarTable = () => {
           >
             เพิ่มรถยนต์
           </Button>
-        </Tooltip>
+        </Tooltip> */}
       </Group>
 
       <Group mt={-10}>
