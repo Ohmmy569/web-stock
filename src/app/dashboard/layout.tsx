@@ -19,6 +19,8 @@ import {
   IconTablePlus,
   IconLogout,
   IconUser,
+  IconHistory,
+  IconArticleFilled
 } from "@tabler/icons-react";
 import classes from "@css/nav.module.css";
 import { usePathname, useRouter, redirect } from "next/navigation";
@@ -65,25 +67,36 @@ export default function DashboardLayout({
   const data = [
     {
       link: "/dashboard/parts",
-      label: "รายการอะไหล่รถยนต์",
-
+      label: "อะไหล่รถยนต์",
       icon: IconEngine,
     },
     {
-      link: "/dashboard/outparts",
-      label: "รายการอะไหล่ที่เบิก",
-      icon: IconShoppingCartCog,
+      link: "/dashboard/typeofparts",
+      label: "ประเภทอะไหล่",
+      icon: IconArticleFilled,
     },
+    // {
+    //   link: "/dashboard/outparts",
+    //   label: "เบิกอะไหล่รถยนต์",
+    //   icon: IconShoppingCartCog,
+    // },
+    // {
+    //   link: "/dashboard/addparts",
+    //   label: "เติมอะไหล่รถยนต์",
+    //   icon: IconTablePlus,
+    // },
     {
       link: "/dashboard/car",
       label: "รายการรถยนต์",
       icon: IconCar,
     },
+ 
     {
-      link: "/dashboard/addparts",
-      label: "เพิ่มอะไหล่รถยนต์",
-      icon: IconTablePlus,
+      link: "/dashboard/partHistory",
+      label: "ประวัติการใช้งาน",
+      icon: IconHistory,
     },
+   
   ];
 
   const handleClick = (event: any, index: any) => {
