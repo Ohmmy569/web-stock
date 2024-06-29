@@ -24,11 +24,7 @@ export type Part = {
     amount : number;
 }
 
-export type partCode = {
-    id : string;
-    code : string;
-    amount : number;
-}
+
 
 export type PartType = {
     id : string;

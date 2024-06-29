@@ -218,7 +218,6 @@ const PartHistoryTable = () => {
         >
           <Table highlightOnHover striped>
             <Table.Thead
-              className={cx(classes.header, { [classes.scrolled]: scrolled })}
             >
               <Table.Tr>
         

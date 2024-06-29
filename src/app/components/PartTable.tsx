@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
 import {
   ActionIcon,
+  Badge,
   Button,
   Card,
   Group,
   Modal,
   NumberFormatter,
+  Paper,
   ScrollArea,
   Select,
   Stack,
+  Switch,
   Table,
   Text,
   TextInput,
@@ -21,10 +24,12 @@ import {
   IconEngine,
   IconPackageExport,
   IconPackageImport,
+  IconPlus,
 } from "@tabler/icons-react";
 import cx from "clsx";
 import classes from "./TableScrollArea.module.css";
 import { Part, Car } from "../type";
+import { useSession, signOut } from "next-auth/react";
 import {
   Timestamp,
   collection,
@@ -58,19 +63,32 @@ const PartTable = () => {
   const [TypeofParts, setTypeofParts] = useState([] as any[] | undefined);
   const [search, setSearch] = useState("");
   const [scrolled, setScrolled] = useState(false);
+
   const [editPart, setEditPart] = useState<Part>({} as Part);
   const [brand, setBrand] = useState("all");
   const [typeofparts, setTypeofparts] = useState("all");
   const [EditPartName, setEditPartName] = useState([] as any[] | undefined);
+  const [EditPartCode, setEditPartCode] = useState([] as any[] | undefined);
   const [EditCode, setEditCode] = useState("");
+  const [PickBrand, setPickBrand] = useState("");
+
   const [RestockPart, setRestockPart] = useState<Part>({} as Part);
 
   const [Addopened, { open: openAdd, close: closeAdd }] = useDisclosure(false);
   const [Editopened, { open: openEdit, close: closeEdit }] =
     useDisclosure(false);
 
-  const [Restockopened, { open: openRestock, close: closeRestock }] = useDisclosure(false);
-  const [OutStockopened, { open: openOutStock, close: closeOutStock }] = useDisclosure(false);
+  const [Restockopened, { open: openRestock, close: closeRestock }] =
+    useDisclosure(false);
+  const [OutStockopened, { open: openOutStock, close: closeOutStock }] =
+    useDisclosure(false);
+
+  const { data: session, status } = useSession();
+  const UserEmail = session?.user?.email;
+  const name = UserEmail?.split("@")[0];
+
+  const [checked, setChecked] = useState(false);
+  const [checkedIn, setCheckedIn] = useState(false);
 
   useEffect(() => {
     const unsubscribeParts = queryCollection("parts", setParts);
@@ -123,6 +141,7 @@ const PartTable = () => {
   ) as string[];
   const modalCode = PartCode;
   let modalEditPartName = Parts?.map((Part: Part) => Part.name) as string[];
+  let modalEditPartCode = Parts?.map((Part: Part) => Part.code) as string[];
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let value = event.target.value.replace(/\s/g, "");
@@ -135,7 +154,9 @@ const PartTable = () => {
     return (
       searchFields.includes(search.toLowerCase()) &&
       (brand === "all" || Part.brand === brand) &&
-      (typeofparts === "all" || Part.type === typeofparts)
+      (typeofparts === "all" || Part.type === typeofparts) &&
+      (checked ? Part.amount === 0 : true) &&
+      (checkedIn ? Part.amount > 0 : true)
     );
   });
 
@@ -143,6 +164,8 @@ const PartTable = () => {
     setEditPart(Part);
     setEditCode(Part.code);
     setEditPartName(modalEditPartName.filter((name) => name !== Part.name));
+    setEditPartCode(modalEditPartCode.filter((code) => code !== Part.code));
+    setPickBrand(Part.brand);
     openEdit();
   }
 
@@ -177,20 +200,32 @@ const PartTable = () => {
 
   const rows = filteredParts?.map((Part: Part) => (
     <Table.Tr key={Part.id}>
-      <Table.Td ta="center">{Part.code}</Table.Td>
-      <Table.Td ta="center">{Part.name}</Table.Td>
-      <Table.Td ta="center">{Part.type}</Table.Td>
+      <Table.Td ta="center" align="center">
+        {Part.code}
+      </Table.Td>
+      <Table.Td ta="center" align="center">
+        {Part.name}
+      </Table.Td>
+      <Table.Td ta="center" align="center">
+        {Part.type}
+      </Table.Td>
 
-      <Table.Td ta="center">{Part.brand}</Table.Td>
-      <Table.Td ta="center">{Part.model}</Table.Td>
-      <Table.Td ta="center">
+      <Table.Td ta="center" align="center">
+        {Part.brand}
+      </Table.Td>
+      <Table.Td ta="center" align="center">
+        {Part.model}
+      </Table.Td>
+      <Table.Td ta="center" align="center">
         <NumberFormatter thousandSeparator suffix=" ฿" value={Part.costPrice} />
       </Table.Td>
-      <Table.Td ta="center">
+      <Table.Td ta="center" align="center">
         <NumberFormatter thousandSeparator suffix=" ฿" value={Part.salePrice} />
       </Table.Td>
-      <Table.Td ta="center">{Part.amount}</Table.Td>
-      <Table.Td ta="center">
+      <Table.Td ta="center" align="center">
+        {Part.amount}
+      </Table.Td>
+      <Table.Td ta="center" align="center">
         <Group gap={"xs"}>
           <Tooltip label="แก้ไข">
             <ActionIcon
@@ -216,7 +251,7 @@ const PartTable = () => {
           <Tooltip label="เติมอ่ะไหล่">
             <ActionIcon
               variant="filled"
-              color="green.8"
+              color="teal"
               onClick={() => OpenRestock(Part)}
             >
               <IconPackageImport />
@@ -227,6 +262,7 @@ const PartTable = () => {
               variant="filled"
               color="blue.8"
               onClick={() => OpenOutStock(Part)}
+              disabled={Part.amount === 0}
             >
               <IconPackageExport />
             </ActionIcon>
@@ -253,24 +289,25 @@ const PartTable = () => {
     <Stack align="stretch" justify="center" gap="md">
       <Group justify="space-between">
         <Group align="center" gap={5}>
-          <IconEngine size={25} />
+          <IconEngine size={30} />
           <Text size="xl" fw={700}>
             อ่ะไหล่รถยนต์
           </Text>
         </Group>
-        <Tooltip label="เพิ่มรายการอะไหล่">
+        <Tooltip label="เพิ่มอะไหล่ใหม่">
           <Button
             variant="filled"
-            color="lime.8"
+            color="green"
             radius="md"
+            leftSection={<IconPlus size={20} stroke={2.5}/>}
             onClick={() => openAdd()}
           >
-            เพิ่มรายการอะไหล่ใหม่
+            เพิ่มอะไหล่ใหม่
           </Button>
         </Tooltip>
       </Group>
 
-      <Group mt={-10}>
+      <Group mt={-10} grow>
         <TextInput
           label="ค้นหาทุกข้อมูล"
           placeholder="ค้นหาทุกข้อมูล"
@@ -290,6 +327,7 @@ const PartTable = () => {
             { label: "ทั้งหมด", value: "all" },
             ...ModalTypeofParts.map((type) => ({ label: type, value: type })),
           ]}
+          defaultValue={"all"}
           onChange={(value) => setTypeofparts(value as string)}
         />
         <Select
@@ -299,21 +337,30 @@ const PartTable = () => {
             ...ModalcarBrand.map((brand) => ({ label: brand, value: brand })),
           ]}
           label="เลือกยี่ห้อรถยนต์"
+          defaultValue={"all"}
           onChange={(value) => setBrand(value as string)}
         />
+        <Stack mt={5}>
+          {" "}
+          <Switch
+            label="อ่ะไหล่ที่หมด"
+            checked={checked}
+            onChange={(event) => setChecked(event.currentTarget.checked)}
+          />
+          <Switch
+            label="อ่ะไหล่ที่มีในคลัง"
+            checked={checkedIn}
+            onChange={(event) => setCheckedIn(event.currentTarget.checked)}
+          />
+        </Stack>
       </Group>
 
-      <Card shadow="xs" padding="md" radius="md" withBorder>
-        <ScrollArea
-          style={{ height: "calc(100vh - 232px)" }}
-          onScrollPositionChange={({ y }) => setScrolled(y !== 0)}
-        >
-          <Table highlightOnHover striped>
-            <Table.Thead
-              className={cx(classes.header, { [classes.scrolled]: scrolled })}
-            >
+
+      <Paper  shadow="sm" radius="md" p={"sm"} withBorder>
+          <Table highlightOnHover stickyHeader striped stickyHeaderOffset={55}>
+            <Table.Thead>
               <Table.Tr>
-                <Table.Th ta="center">รหัส</Table.Th>
+                <Table.Th ta="center">รหัสบาร์โค๊ด</Table.Th>
                 <Table.Th ta="center">ชื่อ</Table.Th>
                 <Table.Th ta="center">ประเภท</Table.Th>
                 <Table.Th ta="center">ยี่ห้อรถยนต์</Table.Th>
@@ -326,8 +373,7 @@ const PartTable = () => {
             </Table.Thead>
             <Table.Tbody>{rows}</Table.Tbody>
           </Table>
-        </ScrollArea>
-      </Card>
+      </Paper>
 
       <AddPartModal
         opened={Addopened}
@@ -351,6 +397,7 @@ const PartTable = () => {
         }
         EditPart={editPart}
         partName={EditPartName}
+        partCode={EditPartCode}
         typeofPart={ModalTypeofParts}
         carBrand={ModalcarBrand}
         Cars={ModalCars}
@@ -361,14 +408,12 @@ const PartTable = () => {
         title={<Text fw={900}> เติมอะไหล่ {RestockPart.name} </Text>}
         Part={RestockPart}
       />
-      <OutStockPartModal 
-      opened={OutStockopened}
-      onClose={closeOutStock}
-      title={<Text fw={900}> เบิกอะไหล่ {RestockPart.name} </Text>}
-      Part={RestockPart}
-        
+      <OutStockPartModal
+        opened={OutStockopened}
+        onClose={closeOutStock}
+        title={<Text fw={900}> เบิกอะไหล่ {RestockPart.name} </Text>}
+        Part={RestockPart}
       />
-
     </Stack>
   );
 };

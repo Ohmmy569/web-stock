@@ -39,7 +39,7 @@ const OutStockPartModal: React.FC<ModalProps> = ({
   title,
 }) => {
   const schema = z.object({
-    amount: z.number().min(0, { message: "กรุณากรอกจำนวน" }),
+    amount: z.number().min(0, { message: "กรุณากรอกจำนวน" }).max(Part.amount, { message: "จำนวนที่เบิกมากกว่าจำนวนที่มีในคลัง" })
   });
 
   const form = useForm({
@@ -95,7 +95,6 @@ const OutStockPartModal: React.FC<ModalProps> = ({
             required
             {...form.getInputProps("amount")}
             min={0}
-            max={Part.amount}
             />
           <Center>
             <Group justify="space-between" mt={15}>

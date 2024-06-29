@@ -23,20 +23,20 @@ import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 import {
-  
   serverTimestamp,
   updateDoc,
   collection,
   doc,
   query,
 } from "firebase/firestore";
-import { Car, Part, partCode } from "@/app/type";
+import { Car, Part } from "@/app/type";
 
 interface ModalProps {
   opened: boolean;
   onClose: () => void;
   title: React.ReactNode;
   partName: string[] | undefined;
+  partCode: string[] | undefined;
   typeofPart: string[];
   carBrand: string[];
   Cars: Car[] | undefined;
@@ -56,17 +56,31 @@ const EditPartModal: React.FC<ModalProps> = ({
   carBrand,
   Cars,
   EditPart,
+  partCode,
 }) => {
   const [CarModel, setCarModel] = useState<string[]>([]);
-  const [selectedBrand, setSelectedBrand] = useState<string>("");
+  const [selectedBrand, setSelectedBrand] = useState<string>(
+    ""
+  );
 
   const PartName = partName || [];
   const CarBrand = carBrand || [];
   const TypeofPart = typeofPart || [];
   const Editmodel: string[] = EditPart?.model?.split(" , ") || [];
-  
 
   const schema = z.object({
+    code: z
+      .string()
+      .nonempty({ message: "กรุณากรอกรหัสอ่ะไหล่" })
+      .refine(
+        (value) => {
+          if (partCode?.includes(value)) {
+            return false; // Invalid if the code already exists in Partcode
+          }
+          return true; // Valid if the code doesn't exist in Partcode
+        },
+        { message: "รหัสอ่ะไหล่ซ้ำ" }
+      ),
     name: z
       .string()
       .nonempty({ message: "กรุณากรอกชื่ออ่ะไหล่" })
@@ -84,24 +98,23 @@ const EditPartModal: React.FC<ModalProps> = ({
     model: z.array(z.string()).nonempty({ message: "กรุณาเลือกรุ่นรถยนต์" }),
     costPrice: z.number().min(0, { message: "กรุณากรอกราคาทุน" }),
     salePrice: z.number().min(0, { message: "กรุณากรอกราคาขาย" }),
-   
   });
-  
 
   const form = useForm({
     initialValues: {
-      name: "",
-      typeofPart: "",
-      brand: "",
-      model: [],
-      costPrice: 0,
-      salePrice: 0,
-   
+      code: EditPart?.code,
+      name: EditPart?.name,
+      typeofPart: EditPart?.type,
+      brand: EditPart?.brand,
+      model: Editmodel as any,
+      costPrice: EditPart?.costPrice,
+      salePrice: EditPart?.salePrice,
     },
     validate: zodResolver(schema),
   });
 
   useEffect(() => {
+    setSelectedBrand(EditPart?.brand);
     if (selectedBrand) {
       const filteredModels =
         Cars?.filter((car) => car.brand === selectedBrand).map(
@@ -109,19 +122,16 @@ const EditPartModal: React.FC<ModalProps> = ({
         ) || [];
       //append value "all" to the beginning of the array
       setCarModel(removeDuplicates(["ใช้ได้ทุกรุ่น", ...filteredModels]));
-    } else {
-      setCarModel([]);
-
-      form.setValues({
-        name: EditPart?.name,
-        typeofPart: EditPart?.type,
-        brand: EditPart?.brand,
-        model: Editmodel as any,
-        costPrice: EditPart?.costPrice,
-        salePrice: EditPart?.salePrice,
-      
-      });
     }
+    form.setValues({
+      code: EditPart?.code,
+      name: EditPart?.name,
+      typeofPart: EditPart?.type,
+      brand: EditPart?.brand,
+      model: Editmodel as any,
+      costPrice: EditPart?.costPrice,
+      salePrice: EditPart?.salePrice,
+    });
   }, [selectedBrand, Cars, EditPart]);
 
   const handlesubmit = async (data: any) => {
@@ -144,14 +154,15 @@ const EditPartModal: React.FC<ModalProps> = ({
 
       const collectionRef = collection(db, "parts");
       const docRef = doc(collectionRef, EditPart.id);
+
       await updateDoc(docRef, {
+        code: data.code,
         name: data.name,
         type: data.typeofPart,
         brand: data.brand,
         model: model,
         costPrice: data.costPrice,
         salePrice: data.salePrice,
-        amount: data.amount,
         timestamp: serverTimestamp(),
       });
       showNotification({
@@ -162,11 +173,9 @@ const EditPartModal: React.FC<ModalProps> = ({
       });
       form.reset();
     } catch (error) {
-      console.log(error);
-      form.reset();
       showNotification({
-        title: "เพิ่มผู้ใช้งานไม่สำเร็จ",
-        message: "เกิดข้อผิดพลาดระหว่างเพิ่มผู้ใช้งาน",
+        title: "แก้ไขอ่ะไหล่ไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดระหว่างแก้ไขอ่ะไหล่",
         color: "red",
         icon: null,
       });
@@ -186,6 +195,12 @@ const EditPartModal: React.FC<ModalProps> = ({
         }}
       >
         <Box>
+          <TextInput
+            label="รหัสอ่ะไหล่"
+            placeholder="กรอกรหัสอ่ะไหล่"
+            mb={"xs"}
+            {...form.getInputProps("code")}
+          />
           <TextInput
             label="ชื่ออ่ะไหล่"
             placeholder="กรอกชื่ออ่ะไหล่"

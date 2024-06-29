@@ -1,8 +1,6 @@
 "use client";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { auth, db } from "@/app/firebase/firebase";
+import { db } from "@/app/firebase/firebase";
 
 import {
   Box,
@@ -11,12 +9,8 @@ import {
   Group,
   Modal,
   NumberInput,
-  PasswordInput,
   Select,
-  Text,
   TextInput,
-  Checkbox,
-  CheckboxGroup,
   MultiSelect,
 } from "@mantine/core";
 import { z } from "zod";
@@ -25,12 +19,9 @@ import { showNotification } from "@mantine/notifications";
 import {
   addDoc,
   serverTimestamp,
-  updateDoc,
   collection,
-  doc,
-  query,
 } from "firebase/firestore";
-import { Car, partCode } from "@/app/type";
+import { Car } from "@/app/type";
 
 interface ModalProps {
   opened: boolean;
@@ -40,7 +31,7 @@ interface ModalProps {
   typeofPart: string[];
   carBrand: string[];
   Cars: Car[] | undefined;
-  Code: partCode[] | undefined;
+  Code: string[] | undefined;
 }
 
 function removeDuplicates(arr: any[]) {
@@ -61,10 +52,23 @@ const AddPartModal: React.FC<ModalProps> = ({
   const [selectedBrand, setSelectedBrand] = useState<string>("");
 
   const PartName = partName || [];
+  const CodeName = Code || [];
   const CarBrand = carBrand || [];
   const TypeofPart = typeofPart || [];
 
   const schema = z.object({
+    code: z
+      .string()
+      .nonempty({ message: "กรุณากรอกรหัสอ่ะไหล่" })
+      .refine(
+        (value) => {
+          if (CodeName.includes(value)) {
+            return false; // Invalid if the code already exists in CodeName
+          }
+          return true; // Valid if the code doesn't exist in CodeName
+        },
+        { message: "รหัสอ่ะไหล่ซ้ำ" }
+      ),
     name: z
       .string()
       .nonempty({ message: "กรุณากรอกชื่ออ่ะไหล่" })
@@ -82,18 +86,18 @@ const AddPartModal: React.FC<ModalProps> = ({
     model: z.array(z.string()).nonempty({ message: "กรุณาเลือกรุ่นรถยนต์" }),
     costPrice: z.number().min(0, { message: "กรุณากรอกราคาทุน" }),
     salePrice: z.number().min(0, { message: "กรุณากรอกราคาขาย" }),
-    amount: z.number().min(0, { message: "กรุณากรอกจำนวน" }),
   });
 
   const form = useForm({
     initialValues: {
+      code: "",
       name: "",
       typeofPart: "",
       brand: "",
       model: [],
       costPrice: "",
       salePrice: "",
-      amount: "",
+     
     },
     validate: zodResolver(schema),
   });
@@ -111,7 +115,7 @@ const AddPartModal: React.FC<ModalProps> = ({
     }
   }, [selectedBrand, Cars]);
 
-  const handlesubmit = async (data: any, code: partCode[]) => {
+  const handlesubmit = async (data: any) => {
     try {
       if (PartName.includes(data.name)) {
         showNotification({
@@ -129,43 +133,16 @@ const AddPartModal: React.FC<ModalProps> = ({
         model = data.model[0];
       }
 
-      const thisSubBrand = data.brand.toUpperCase().substring(0, 3);
-      const thisNumber = code.find((part) =>
-        part.code.includes(thisSubBrand)
-      )?.amount;
-      const ThisNumber = thisNumber ? thisNumber + 1 : 1;
-
-      const thisCode = thisSubBrand + ThisNumber.toString().padStart(3, "0");
-      const thisID = code.find((part) => part.code.includes(thisSubBrand))?.id;
-
-      const collectionCode = collection(db, "partCode");
-      //update collection partCode
-      //if the code already exists, update the amount
-      if(thisID === undefined){
-        const collectionRef = collection(db, "partCode");
-        await addDoc(collectionRef, {
-          code: thisCode,
-          amount: ThisNumber,
-      
-        });
-      }
-      else{
-        const docRef = doc(collectionCode, thisID);
-        updateDoc(docRef, {
-          amount: ThisNumber,
-        });
-      }
-
       const collectionRef = collection(db, "parts");
       await addDoc(collectionRef, {
-        code: thisCode,
+        code: data.code,
         name: data.name,
         type: data.typeofPart,
         brand: data.brand,
         model: model,
         costPrice: data.costPrice,
         salePrice: data.salePrice,
-        amount: data.amount,
+        amount: 0,
         timestamp: serverTimestamp(),
       });
       showNotification({
@@ -176,8 +153,7 @@ const AddPartModal: React.FC<ModalProps> = ({
       });
       form.reset();
     } catch (error) {
-      console.log(error);
-      form.reset();
+  
       showNotification({
         title: "เพิ่มผู้ใช้งานไม่สำเร็จ",
         message: "เกิดข้อผิดพลาดระหว่างเพิ่มผู้ใช้งาน",
@@ -193,13 +169,19 @@ const AddPartModal: React.FC<ModalProps> = ({
         onSubmit={(event) => {
           event.preventDefault();
           form.onSubmit((data) => {
-            handlesubmit(data, Code || []);
+            handlesubmit(data);
             form.reset();
             onClose();
           })();
         }}
       >
         <Box>
+          <TextInput
+            label="รหัสอ่ะไหล่"
+            placeholder="กรอกรหัสอ่ะไหล่"
+            mb={"xs"}
+            {...form.getInputProps("code")}
+          />
           <TextInput
             label="ชื่ออ่ะไหล่"
             placeholder="กรอกชื่ออ่ะไหล่"
@@ -251,12 +233,6 @@ const AddPartModal: React.FC<ModalProps> = ({
             placeholder="กรอกราคาขาย"
             mb={"xs"}
             {...form.getInputProps("salePrice")}
-          />
-          <NumberInput
-            label="จำนวน"
-            placeholder="กรอกจำนวน"
-            mb={"xs"}
-            {...form.getInputProps("amount")}
           />
           <Center>
             <Group justify="space-between" mt={15}>

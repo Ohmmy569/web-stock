@@ -23,7 +23,7 @@ export async function Addhistory(
   salePrice: number,
 ) {
   const collectionRef = collection(db, "history");
-  const [PartHistory, setPartHistory] = useState([] as any[] | undefined);
+  let PartHistory: any[] | undefined;
   await addDoc(collectionRef, {
     user : user,
     partCode: partCode,
@@ -38,15 +38,16 @@ export async function Addhistory(
 
   //if history > 30 delete the oldest one
   const q = query(collection(db, "history"));
-  const querySnapshot = await onSnapshot(q, (snapshot) => {
-    setPartHistory(snapshot.docs.map((doc) => doc.data()));
+  const querySnapshot = onSnapshot(q, (snapshot) => {
   });
   if (PartHistory != undefined) {
-    if (PartHistory?.length > 30) {
+    if (PartHistory?.length > 200) {
       const q = query(collection(db, "history"));
-      const querySnapshot = await onSnapshot(q, (snapshot) => {
-        setPartHistory(snapshot.docs.map((doc) => doc.data()));
+      const querySnapshot = onSnapshot(q, (snapshot) => {
+        PartHistory = snapshot.docs.map((doc) => doc.data());
       });
+      console.log(PartHistory);
+      
       const oldest = PartHistory?.sort((a, b) => a.timestamp - b.timestamp);
       const oldestId = oldest[0].id;
       const docRef = doc(collectionRef, oldestId);

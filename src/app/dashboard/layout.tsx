@@ -75,16 +75,6 @@ export default function DashboardLayout({
       label: "ประเภทอะไหล่",
       icon: IconArticleFilled,
     },
-    // {
-    //   link: "/dashboard/outparts",
-    //   label: "เบิกอะไหล่รถยนต์",
-    //   icon: IconShoppingCartCog,
-    // },
-    // {
-    //   link: "/dashboard/addparts",
-    //   label: "เติมอะไหล่รถยนต์",
-    //   icon: IconTablePlus,
-    // },
     {
       link: "/dashboard/car",
       label: "รายการรถยนต์",
@@ -112,9 +102,7 @@ export default function DashboardLayout({
     const ThisUser = users?.find(
       (user: User) => user.email === UserEmail
     ) as User;
-
     
-    const passname = name;
 
     if (ThisUser?.role === "admin") {
       data.push({

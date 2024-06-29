@@ -3,9 +3,11 @@ import {
   ActionIcon,
   Button,
   Card,
+  Center,
   Group,
   Modal,
   NumberFormatter,
+  Paper,
   ScrollArea,
   Select,
   Stack,
@@ -22,6 +24,7 @@ import {
   IconPackageExport,
   IconPackageImport,
   IconArticleFilled,
+  IconPlus,
 } from "@tabler/icons-react";
 import cx from "clsx";
 import classes from "./TableScrollArea.module.css";
@@ -39,24 +42,18 @@ import {
 import { db } from "../firebase/firebase";
 import { useDisclosure } from "@mantine/hooks";
 
-import AddPartModal from "@components/PartModal/AddPartModal";
-// import EditPartModal from "./PartModal/EditPartModal";
+import AddTypePartModal from "@components/TypePartModal/Addtype";
+import EditTypePartModal from "@components/TypePartModal/EditType";
 import { modals } from "@mantine/modals";
 import { showNotification } from "@mantine/notifications";
 import { PartType } from "../type";
 
-function removeDuplicates(arr: any[]) {
-  return arr.filter((item, index) => arr.indexOf(item) === index);
-}
-
 const PartTypeTable = () => {
   const [PartType, setPartType] = useState([] as any[] | undefined);
+  const [TypeName, setTypeName] = useState([] as any[] | undefined);
 
   const [search, setSearch] = useState("");
-  const [scrolled, setScrolled] = useState(false);
-  const [editPart, setEditPart] = useState({} as Part);
-  const [brand, setBrand] = useState("all");
-  const [typeofparts, setTypeofparts] = useState("all");
+  const [editPartType, setEditPartType] = useState({} as PartType);
 
   const [Addopened, { open: openAdd, close: closeAdd }] = useDisclosure(false);
   const [Editopened, { open: openEdit, close: closeEdit }] =
@@ -107,32 +104,56 @@ const PartTypeTable = () => {
     return searchFields.includes(search.toLowerCase());
   });
 
-  function OpenEdit(Part: Part) {
-    setEditPart(Part);
+  function OpenEdit(PartTypeIN : PartType) {
+    setEditPartType(PartTypeIN);
+    setTypeName(PartType?.map((Part: Part) => Part.name) || []);
     openEdit();
+  }
+
+  function OpenAdd() {
+    setTypeName(PartType?.map((Part: Part) => Part.name) || []);
+    openAdd();
   }
 
   const openDeleteModal = (PartId: any, Partname: any) => {
     modals.openConfirmModal({
-      title: <Text fw={900}> ลบรายการอ่ะไหล่ </Text>,
+      title: <Text fw={900}> ลบประเภทอ่ะไหล่ </Text>,
       centered: true,
       children: (
         <Text size="sm">
-          ต้องการลบอ่ะไหล่ <strong> {Partname}</strong> ใช่หรือไม่
+          ต้องการลบประเภท <strong> {Partname}</strong> ใช่หรือไม่
         </Text>
       ),
       labels: { confirm: "ยืนยัน", cancel: "ยกเลิก" },
       confirmProps: { color: "red" },
       onCancel: () => onclose,
       onConfirm: () => {
-        removePart(PartId);
+        removePart(PartId, Partname);
         onclose;
       },
     });
   };
+  async function removePart(PartId: any, Partname: any) {
+    try {
+      const docRef = doc(db, "typeofparts", PartId);
+      await deleteDoc(docRef);
+      showNotification({
+        title: "ลบประเภทอ่ะไหล่สำเร็จ",
+        message: "ลบประเภท " + Partname + " สำเร็จ",
+        color: "blue",
+      });
+    } catch (error: any) {
+      showNotification({
+        title: "เกิดข้อผิดพลาดในการลบประเภทอ่ะไหล่รถยนต์",
+        message: error.message,
+        color: "red",
+      });
+    }
+  }
 
-  const rows = filteredParts?.map((Part: Part) => (
+  const rows = filteredParts?.map((Part: Part, index: number) => (
     <Table.Tr key={Part.id}>
+      <Table.Td ta="center">{index + 1}</Table.Td>
       <Table.Td ta="center">{Part.name}</Table.Td>
       <Table.Td ta="center">
         <Group gap={"xs"}>
@@ -150,9 +171,7 @@ const PartTypeTable = () => {
             <ActionIcon
               variant="filled"
               color="red.8"
-              onClick={() =>
-                openDeleteModal(Part.id, Part.code + " " + Part.name)
-              }
+              onClick={() => openDeleteModal(Part.id, Part.name)}
             >
               <IconTrash />
             </ActionIcon>
@@ -162,24 +181,11 @@ const PartTypeTable = () => {
     </Table.Tr>
   ));
 
-  async function removePart(PartId: any) {
-    try {
-      const docRef = doc(db, "parts", PartId);
-      await deleteDoc(docRef);
-    } catch (error: any) {
-      showNotification({
-        title: "เกิดข้อผิดพลาดในการลบอ่ะไหล่รถยนต์",
-        message: error.message,
-        color: "red",
-      });
-    }
-  }
-
   return (
     <Stack align="stretch" justify="center" gap="md">
       <Group justify="space-between">
         <Group align="center" gap={5}>
-          <IconArticleFilled size={25} />
+          <IconArticleFilled size={30} />
           <Text size="xl" fw={700}>
             ประเภทอ่ะไหล่รถยนต์
           </Text>
@@ -187,16 +193,17 @@ const PartTypeTable = () => {
         <Tooltip label="เพิ่มรายการอะไหล่">
           <Button
             variant="filled"
-            color="lime.8"
+            color="green"
             radius="md"
-            onClick={() => openAdd()}
+            leftSection={<IconPlus size={20} stroke={2.5} />}
+            onClick={() => OpenAdd()}
           >
-            เพิ่มรายการประเภทอะไหล่
+            เพิ่มประเภทอ่ะไหล่
           </Button>
         </Tooltip>
       </Group>
 
-      <Group mt={-10}>
+      <Group mt={-10} grow>
         <TextInput
           label="ค้นหาทุกข้อมูล"
           placeholder="ค้นหาทุกข้อมูล"
@@ -206,49 +213,45 @@ const PartTypeTable = () => {
               stroke={1.5}
             />
           }
+          
           value={search}
           onChange={handleSearchChange}
         />
+        <Text>
+        &nbsp;
+        </Text>
+        <Text>
+        &nbsp;
+        </Text>
       </Group>
+      <Paper shadow="sm" radius="md" p={"sm"} withBorder>
+        <Table highlightOnHover stickyHeader striped stickyHeaderOffset={55}>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th ta="center">ลำดับ</Table.Th>
+              <Table.Th ta="center">ชื่อประเภท</Table.Th>
 
-      <Card shadow="xs" padding="md" radius="md" withBorder>
-        <ScrollArea
-          style={{ height: "calc(100vh - 232px)" }}
-          onScrollPositionChange={({ y }) => setScrolled(y !== 0)}
-        >
-          <Table highlightOnHover striped>
-            <Table.Thead
-              className={cx(classes.header, { [classes.scrolled]: scrolled })}
-            >
-              <Table.Tr>
-        
-                <Table.Th ta="center">ชื่อประเภท</Table.Th>
-               
-                <Table.Th ta="center"> </Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{rows}</Table.Tbody>
-          </Table>
-        </ScrollArea>
-      </Card>
+              <Table.Th ta="center"> </Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{rows}</Table.Tbody>
+        </Table>
+      </Paper>
 
-      {/* <AddPartModal
+      <AddTypePartModal
         opened={Addopened}
         onClose={closeAdd}
-        title={<Text fw={900}> เพิ่มรายการอะไหล่ </Text>}
-        partName={modalPartName}
-        typeofPart={ModalTypeofParts}
-        carBrand={ModalcarBrand}
-        Cars={ModalCars}
-        Code={modalCode}
-      /> */}
-      {/*
-      <EditPartModal
+        title={<Text fw={900}> เพิ่มประเภทอะไหล่ </Text>}
+        typeName={TypeName}
+      />
+      
+      <EditTypePartModal
         opened={Editopened}
         onClose={closeEdit}
-        title={<Text fw={900}> แก้ไขผู้ใช้งาน </Text>}
-        Parts={editPart }
-      /> */}
+        title={<Text fw={900}> เพิ่มประเภทอะไหล่ </Text>}
+        typeName={TypeName}
+        TypePart={editPartType}
+      />
     </Stack>
   );
 };
