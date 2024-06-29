@@ -13,7 +13,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 
-function page() {
+function Page() {
   const matches = useMediaQuery("(min-width: 56.25em)");
 
   if (matches) {
@@ -31,4 +31,4 @@ function page() {
   }
 }
 
-export default page;
+export default Page;

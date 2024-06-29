@@ -5,6 +5,7 @@ import {
   Card,
   Group,
   Modal,
+  Paper,
   ScrollArea,
   Stack,
   Table,
@@ -19,7 +20,6 @@ import {
   IconSearch,
 } from "@tabler/icons-react";
 import cx from "clsx";
-import classes from "./TableScrollArea.module.css";
 import { User } from "../type";
 import {
   Timestamp,
@@ -179,15 +179,9 @@ const UserTable = () => {
         onChange={handleSearchChange}
       />
 
-      <Card shadow="xs" padding="md" radius="md" withBorder>
-        <ScrollArea
-          style={{ height: "calc(100vh - 217px)" }}
-          onScrollPositionChange={({ y }) => setScrolled(y !== 0)}
-        >
-          <Table highlightOnHover striped>
-            <Table.Thead
-              className={cx(classes.header, { [classes.scrolled]: scrolled })}
-            >
+<Paper  shadow="sm" radius="md" p={"sm"} withBorder>
+<Table highlightOnHover stickyHeader striped stickyHeaderOffset={55} >
+            <Table.Thead            >
               <Table.Tr>
                 <Table.Th ta="center">ชื่อผู้ใช้</Table.Th>
                 <Table.Th ta="center">รหัสผ่าน</Table.Th>
@@ -198,8 +192,8 @@ const UserTable = () => {
             </Table.Thead>
             <Table.Tbody>{rows}</Table.Tbody>
           </Table>
-        </ScrollArea>
-      </Card>
+   
+      </Paper>
 
       <AddUserModal
         opened={Addopened}
