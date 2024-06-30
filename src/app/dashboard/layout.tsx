@@ -83,7 +83,7 @@ export default function DashboardLayout({
  
     {
       link: "/dashboard/partHistory",
-      label: "ประวัติการใช้งาน",
+      label: "ประวัติการเบิก - เติมอะไหล่",
       icon: IconHistory,
     },
    
