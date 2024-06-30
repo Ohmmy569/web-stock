@@ -29,7 +29,7 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
-import { deleteUser , } from "firebase/auth";
+import { deleteUser } from "firebase/auth";
 import { db } from "../firebase/firebase";
 import { useDisclosure } from "@mantine/hooks";
 
@@ -39,12 +39,11 @@ import { modals } from "@mantine/modals";
 import { set } from "zod";
 import { showNotification } from "@mantine/notifications";
 
-
 const UserTable = () => {
   const [users, setUsers] = useState([] as any[] | undefined);
   const [search, setSearch] = useState("");
   const [scrolled, setScrolled] = useState(false);
-  const [editUser , setEditUser] = useState({} as User);
+  const [editUser, setEditUser] = useState({} as User);
 
   const [Addopened, { open: openAdd, close: closeAdd }] = useDisclosure(false);
   const [Editopened, { open: openEdit, close: closeEdit }] =
@@ -100,7 +99,11 @@ const UserTable = () => {
       <Table.Td ta="center">{user.role}</Table.Td>
       <Table.Td ta="center">
         <Tooltip label="แก้ไข">
-          <ActionIcon variant="filled" color="yellow.8"  onClick={() => OpenEdit(user)}>
+          <ActionIcon
+            variant="filled"
+            color="yellow.8"
+            onClick={() => OpenEdit(user)}
+          >
             <IconEdit />
           </ActionIcon>
         </Tooltip>
@@ -119,14 +122,11 @@ const UserTable = () => {
     </Table.Tr>
   ));
 
-  async function  removeUser(UserId: any) {
+  async function removeUser(UserId: any) {
     try {
       const docRef = doc(db, "user", UserId);
       await deleteDoc(docRef);
-
-      
-    }
-    catch (error: any) {
+    } catch (error: any) {
       showNotification({
         title: "Failed to delete user",
         message: error.message,
@@ -164,35 +164,44 @@ const UserTable = () => {
           </Text>
         </Group>
         <Tooltip label="เพิ่มผู้ใช้งาน">
-          <Button variant="filled" color="lime.8" radius="md" onClick={openAdd}>
+          <Button variant="filled" color="green" radius="md" onClick={openAdd}>
             เพิ่มผู้ใช้งาน
           </Button>
         </Tooltip>
       </Group>
 
-      <TextInput
-        placeholder="Search by any field"
-        leftSection={
-          <IconSearch style={{ width: "1rem", height: "1rem" }} stroke={1.5} />
-        }
-        value={search}
-        onChange={handleSearchChange}
-      />
+      <Group mt={-10} grow>
+        <TextInput
+          label="ค้นหาทุกข้อมูล"
+          placeholder="ค้นหาทุกข้อมูล"
+          leftSection={
+            <IconSearch
+              style={{ width: "1rem", height: "1rem" }}
+              stroke={1.5}
+            />
+          }
+          value={search}
+          onChange={handleSearchChange}
+        />
 
-<Paper  shadow="sm" radius="md" p={"sm"} withBorder>
-<Table highlightOnHover stickyHeader striped stickyHeaderOffset={55} >
-            <Table.Thead            >
-              <Table.Tr>
-                <Table.Th ta="center">ชื่อผู้ใช้</Table.Th>
-                <Table.Th ta="center">รหัสผ่าน</Table.Th>
-                <Table.Th ta="center">เวลาที่สร้าง</Table.Th>
-                <Table.Th ta="center">บทบาท</Table.Th>
-                <Table.Th ta="center"> </Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{rows}</Table.Tbody>
-          </Table>
-   
+        <Text>&nbsp;</Text>
+        <Text>&nbsp;</Text>
+        <Text>&nbsp;</Text>
+      </Group>
+
+      <Paper shadow="sm" radius="md" p={"sm"} withBorder>
+        <Table highlightOnHover stickyHeader striped stickyHeaderOffset={55}>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th ta="center">ชื่อผู้ใช้</Table.Th>
+              <Table.Th ta="center">รหัสผ่าน</Table.Th>
+              <Table.Th ta="center">เวลาที่สร้าง</Table.Th>
+              <Table.Th ta="center">บทบาท</Table.Th>
+              <Table.Th ta="center"> </Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{rows}</Table.Tbody>
+        </Table>
       </Paper>
 
       <AddUserModal
@@ -206,7 +215,7 @@ const UserTable = () => {
         opened={Editopened}
         onClose={closeEdit}
         title={<Text fw={900}> แก้ไขผู้ใช้งาน </Text>}
-        users={editUser }
+        users={editUser}
       />
     </Stack>
   );

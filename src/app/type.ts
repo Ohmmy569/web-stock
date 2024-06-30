@@ -33,14 +33,17 @@ export type PartType = {
 
 export type PartHistory = {
     id : string;
+    timestamp : Date;
+    username : string;
+    action : string;
     partCode : string;
-    type : string;
     partName : string;
+    type : string;
     amount : number;
     brand : string;
     costPrice : number;
     salePrice : number;
-    timestamp : Date;
+  
 } 
 
 

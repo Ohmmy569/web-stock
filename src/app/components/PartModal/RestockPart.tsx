@@ -9,9 +9,6 @@ import {
   Group,
   Modal,
   NumberInput,
-  Select,
-  TextInput,
-  MultiSelect,
 } from "@mantine/core";
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
@@ -24,12 +21,14 @@ import {
   query,
 } from "firebase/firestore";
 import { Part } from "@/app/type";
+import { Addhistory } from "@/app/calcu/addhistory";
 
 interface ModalProps {
   Part : Part;
   opened: boolean;
   onClose: () => void;
   title: React.ReactNode;
+  username : string;
 }
 
 const RestockPartModal: React.FC<ModalProps> = ({
@@ -37,6 +36,7 @@ const RestockPartModal: React.FC<ModalProps> = ({
   opened,
   onClose,
   title,
+  username,
 }) => {
   const schema = z.object({
     amount: z.number().min(0, { message: "กรุณากรอกจำนวน" }),
@@ -56,9 +56,21 @@ const RestockPartModal: React.FC<ModalProps> = ({
       await updateDoc(docRef, {
         amount: data.amount + current,
       });
+      await Addhistory(
+        username,
+        Part.code,
+        Part.type,
+        Part.name,
+        data.amount,
+        Part.brand,
+        Part.costPrice,
+        Part.salePrice,
+        "เติมสินค้า"
+      );
+
       showNotification({
-        title: "เติมอ่ะไหล่สำเร็จ",
-        message: "เติมอ่ะไหล่ " + name + " " + data.amount + " ชิ้น",
+        title: "เติมสินค้าสำเร็จ",
+        message: "เติมสินค้า " + name + " " + data.amount + " ชิ้น",
         color: "blue",
         icon: null,
       });

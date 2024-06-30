@@ -187,7 +187,7 @@ const PartTypeTable = () => {
         <Group align="center" gap={5}>
           <IconArticleFilled size={30} />
           <Text size="xl" fw={700}>
-            ประเภทอ่ะไหล่รถยนต์
+            ประเภทอ่ะไหล่
           </Text>
         </Group>
         <Tooltip label="เพิ่มรายการอะไหล่">
@@ -217,6 +217,9 @@ const PartTypeTable = () => {
           value={search}
           onChange={handleSearchChange}
         />
+        <Text>
+        &nbsp;
+        </Text>
         <Text>
         &nbsp;
         </Text>

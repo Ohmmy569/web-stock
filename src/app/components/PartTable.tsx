@@ -248,7 +248,7 @@ const PartTable = () => {
               <IconTrash />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label="เติมอ่ะไหล่">
+          <Tooltip label="เติมสินค้า">
             <ActionIcon
               variant="filled"
               color="teal"
@@ -257,7 +257,7 @@ const PartTable = () => {
               <IconPackageImport />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label="เบิกอะไหล่">
+          <Tooltip label="เบิกสินค้า">
             <ActionIcon
               variant="filled"
               color="blue.8"
@@ -299,7 +299,7 @@ const PartTable = () => {
             variant="filled"
             color="green"
             radius="md"
-            leftSection={<IconPlus size={20} stroke={2.5}/>}
+            leftSection={<IconPlus size={20} stroke={2.5} />}
             onClick={() => openAdd()}
           >
             เพิ่มอะไหล่ใหม่
@@ -329,6 +329,7 @@ const PartTable = () => {
           ]}
           defaultValue={"all"}
           onChange={(value) => setTypeofparts(value as string)}
+          searchable
         />
         <Select
           placeholder="เลือกยี่ห้อรถยนต์"
@@ -339,40 +340,51 @@ const PartTable = () => {
           label="เลือกยี่ห้อรถยนต์"
           defaultValue={"all"}
           onChange={(value) => setBrand(value as string)}
+          searchable
         />
-        <Stack mt={5}>
-          {" "}
-          <Switch
-            label="อ่ะไหล่ที่หมด"
-            checked={checked}
-            onChange={(event) => setChecked(event.currentTarget.checked)}
-          />
-          <Switch
-            label="อ่ะไหล่ที่มีในคลัง"
-            checked={checkedIn}
-            onChange={(event) => setCheckedIn(event.currentTarget.checked)}
-          />
-        </Stack>
+        <Select
+          placeholder="เลือกสถานะ"
+          data={[
+            { label: "ทั้งหมด", value: "all" },
+            { label: "อ่ะไหล่ที่หมด", value: "0" },
+            { label: "อ่ะไหล่ที่คงเหลือ", value: "1" },
+          ]}
+          label="เลือกสถานะ"
+          defaultValue={"all"}
+          onChange={(value) => {
+            if (value === "0") {
+              setChecked(true);
+              setCheckedIn(false);
+            } else if (value === "1") {
+              setChecked(false);
+              setCheckedIn(true);
+            } else {
+              setChecked(false);
+              setCheckedIn(false);
+            }
+          }}
+          searchable
+        />
       </Group>
+     
 
-
-      <Paper  shadow="sm" radius="md" p={"sm"} withBorder>
-          <Table highlightOnHover stickyHeader striped stickyHeaderOffset={55}>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th ta="center">รหัสบาร์โค๊ด</Table.Th>
-                <Table.Th ta="center">ชื่อ</Table.Th>
-                <Table.Th ta="center">ประเภท</Table.Th>
-                <Table.Th ta="center">ยี่ห้อรถยนต์</Table.Th>
-                <Table.Th ta="center">รุ่นรถยนต์</Table.Th>
-                <Table.Th ta="center">ราคาทุน</Table.Th>
-                <Table.Th ta="center">ราคาขาย</Table.Th>
-                <Table.Th ta="center">จำนวณ</Table.Th>
-                <Table.Th ta="center"> </Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{rows}</Table.Tbody>
-          </Table>
+      <Paper shadow="sm" radius="md" p={"sm"} withBorder>
+        <Table highlightOnHover stickyHeader striped stickyHeaderOffset={55}>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th ta="center">รหัสบาร์โค๊ด</Table.Th>
+              <Table.Th ta="center">ชื่อ</Table.Th>
+              <Table.Th ta="center">ประเภท</Table.Th>
+              <Table.Th ta="center">ยี่ห้อรถยนต์</Table.Th>
+              <Table.Th ta="center">รุ่นรถยนต์</Table.Th>
+              <Table.Th ta="center">ราคาทุน</Table.Th>
+              <Table.Th ta="center">ราคาขาย</Table.Th>
+              <Table.Th ta="center">จำนวณ</Table.Th>
+              <Table.Th ta="center"> </Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>{rows}</Table.Tbody>
+        </Table>
       </Paper>
 
       <AddPartModal
@@ -405,14 +417,16 @@ const PartTable = () => {
       <RestockPartModal
         opened={Restockopened}
         onClose={closeRestock}
-        title={<Text fw={900}> เติมอะไหล่ {RestockPart.name} </Text>}
+        title={<Text fw={900}> เติมสินค้า {RestockPart.name} </Text>}
         Part={RestockPart}
+        username={name as string}
       />
       <OutStockPartModal
         opened={OutStockopened}
         onClose={closeOutStock}
-        title={<Text fw={900}> เบิกอะไหล่ {RestockPart.name} </Text>}
+        title={<Text fw={900}> เบิกสินค้า {RestockPart.name} </Text>}
         Part={RestockPart}
+        username={name as string}
       />
     </Stack>
   );

@@ -1,4 +1,3 @@
-"use client";
 import React, { useEffect, useState } from "react";
 import {
   collection,
@@ -21,11 +20,13 @@ export async function Addhistory(
   brand: string,
   costPrice: number,
   salePrice: number,
+  action: string
 ) {
   const collectionRef = collection(db, "history");
   let PartHistory: any[] | undefined;
   await addDoc(collectionRef, {
-    user : user,
+    action : action,
+    username : user,
     partCode: partCode,
     type: type,
     partName: partName,
@@ -46,7 +47,6 @@ export async function Addhistory(
       const querySnapshot = onSnapshot(q, (snapshot) => {
         PartHistory = snapshot.docs.map((doc) => doc.data());
       });
-      console.log(PartHistory);
       
       const oldest = PartHistory?.sort((a, b) => a.timestamp - b.timestamp);
       const oldestId = oldest[0].id;

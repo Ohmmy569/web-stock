@@ -24,12 +24,14 @@ import {
   query,
 } from "firebase/firestore";
 import { Part } from "@/app/type";
+import { Addhistory } from "@/app/calcu/addhistory";
 
 interface ModalProps {
   Part : Part;
   opened: boolean;
   onClose: () => void;
   title: React.ReactNode;
+  username : string;
 }
 
 const OutStockPartModal: React.FC<ModalProps> = ({
@@ -37,6 +39,7 @@ const OutStockPartModal: React.FC<ModalProps> = ({
   opened,
   onClose,
   title,
+  username,
 }) => {
   const schema = z.object({
     amount: z.number().min(0, { message: "กรุณากรอกจำนวน" }).max(Part.amount, { message: "จำนวนที่เบิกมากกว่าจำนวนที่มีในคลัง" })
@@ -56,6 +59,18 @@ const OutStockPartModal: React.FC<ModalProps> = ({
       await updateDoc(docRef, {
         amount: current - data.amount,
       });
+      await Addhistory(
+        username,
+        Part.code,
+        Part.type,
+        Part.name,
+        data.amount,
+        Part.brand,
+        Part.costPrice,
+        Part.salePrice,
+        "เบิกสินค้า"
+      );
+
       showNotification({
         title: "เบิกอ่ะไหล่สำเร็จ",
         message: "เบิกอ่ะไหล่ " + name + " " + data.amount + " ชิ้น",

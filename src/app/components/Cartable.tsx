@@ -104,6 +104,8 @@ const CarTable = () => {
           ]}
           label="เลือกยี่ห้อรถยนต์"
           onChange={(value) => setBrand(value as string)}
+          defaultValue={"all"}
+          searchable
         />
         <Text>
         &nbsp;
