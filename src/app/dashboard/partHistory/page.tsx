@@ -25,7 +25,7 @@ function Page() {
   } else {
     return (
       <div>
-        <Text size="xl">Sorry, this page is only available on desktop</Text>
+        <Text size="xl">SorrY, this page is only available on desktop</Text>
       </div>
     );
   }
