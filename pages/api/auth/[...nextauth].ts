@@ -1,32 +1,73 @@
 import NextAuth from "next-auth";
+import { connectMongoDB } from "@lib/connectDB";
+import User from "@lib/models/user";
+import { NextApiRequest, NextApiResponse } from "next";
+import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from "@/app/firebase/firebase";
+import bcrypt from "bcryptjs";
+import { Session } from "inspector";
 
 export const authOptions = {
   pages: {
-    signIn: '/login',
+    signIn: "/login",
   },
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
-      credentials: {},
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
       async authorize(credentials): Promise<any> {
         try {
-          const userCredential = await signInWithEmailAndPassword(auth, (credentials as any).username || '', (credentials as any).password || '');
-     
-          
-          if (userCredential.user) {
-            return userCredential.user;
+          // Connect to the MongoDB database
+          await connectMongoDB();
+
+          // Find the user by email
+          const user = await User.findOne({ email: credentials?.email });
+
+          // If user does not exist
+
+          const input = credentials?.password;
+          const isValidPassword = await bcrypt.compare(
+            input as string,
+            user.password
+          );
+
+          if (user && isValidPassword) {
+            return {
+              id: user._id,
+              email: user.email,
+              role: user.role,
+            };
           }
+
           return null;
-        } catch (error : any) {
-        
-          throw new Error(JSON.stringify({ code: error.code, message: error.message }));
+        } catch (error: any) {
+          throw new Error(
+            JSON.stringify({ code: error.code, message: error.message })
+          );
         }
-      }
-    })
+      },
+    }),
   ],
+  session: {
+    strategy: "jwt" as "jwt",
+  },
+  callbacks: {
+    jwt: async ({ token, user }: any) => {
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
+      }
+      return token;
+    },
+    session: async ({ session, token }: any) => {
+      session.user = token;
+      session.user.role = token.role;
+      return session;
+    },
+  },
 };
 
 export default NextAuth(authOptions);

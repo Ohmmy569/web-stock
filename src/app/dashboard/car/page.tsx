@@ -8,7 +8,7 @@ import CarTable from '@/app/components/Cartable';
 function page() {
   return (
     <div>
-      <CarTable />
+      This is the dashboard/car page
     </div>
   )
 }

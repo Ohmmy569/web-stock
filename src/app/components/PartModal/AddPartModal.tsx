@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { db } from "@/app/firebase/firebase";
 
 import {
   Box,
@@ -16,12 +15,9 @@ import {
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
-import {
-  addDoc,
-  serverTimestamp,
-  collection,
-} from "firebase/firestore";
+
 import { Car } from "@/app/type";
+import { useRouter } from "next/navigation";
 
 interface ModalProps {
   opened: boolean;
@@ -50,6 +46,7 @@ const AddPartModal: React.FC<ModalProps> = ({
 }) => {
   const [CarModel, setCarModel] = useState<string[]>([]);
   const [selectedBrand, setSelectedBrand] = useState<string>("");
+  const router = useRouter();
 
   const PartName = partName || [];
   const CodeName = Code || [];
@@ -117,15 +114,6 @@ const AddPartModal: React.FC<ModalProps> = ({
 
   const handlesubmit = async (data: any) => {
     try {
-      if (PartName.includes(data.name)) {
-        showNotification({
-          title: "ชื่ออ่ะไหล่ซ้ำ",
-          message: "กรุณากรอกชื่ออ่ะไหล่ใหม่",
-          color: "red",
-          icon: null,
-        });
-        return;
-      }
       let model = "";
       if (data.model.length > 1) {
         model = data.model.join(" , ");
@@ -133,30 +121,43 @@ const AddPartModal: React.FC<ModalProps> = ({
         model = data.model[0];
       }
 
-      const collectionRef = collection(db, "parts");
-      await addDoc(collectionRef, {
-        code: data.code,
-        name: data.name,
-        type: data.typeofPart,
-        brand: data.brand,
-        model: model,
-        costPrice: data.costPrice,
-        salePrice: data.salePrice,
-        amount: 0,
-        timestamp: serverTimestamp(),
+      const res = await fetch("/api/parts", {
+        method: "POST",
+        body: JSON.stringify({
+          code: data.code,
+          name: data.name,
+          type: data.type,
+          brand: data.brand,
+          model: model,
+          costPrice: data.costPrice,
+          sellPrice: data.salePrice,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+      if(res.ok){
       showNotification({
         title: "เพิ่มอ่ะไหล่สำเร็จ",
         message: "เพิ่มอ่ะไหล่ " + data.name + " สำเร็จ",
         color: "blue",
         icon: null,
       });
+    }
+    else {
+      showNotification({
+        title: "เพิ่มอ่ะไหล่ไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดระหว่างเพิ่มอ่ะไหล่",
+        color: "red",
+        icon: null,
+      });
+    }
       form.reset();
     } catch (error) {
   
       showNotification({
-        title: "เพิ่มผู้ใช้งานไม่สำเร็จ",
-        message: "เกิดข้อผิดพลาดระหว่างเพิ่มผู้ใช้งาน",
+        title: "เพิ่มอ่ะไหล่ไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดระหว่างเพิ่มอ่ะไหล่" + error,
         color: "red",
         icon: null,
       });
@@ -172,6 +173,8 @@ const AddPartModal: React.FC<ModalProps> = ({
             handlesubmit(data);
             form.reset();
             onClose();
+            router.refresh();
+            
           })();
         }}
       >

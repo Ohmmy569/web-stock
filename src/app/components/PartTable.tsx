@@ -25,6 +25,7 @@ import {
   IconPackageExport,
   IconPackageImport,
   IconPlus,
+  IconRefresh,
 } from "@tabler/icons-react";
 import cx from "clsx";
 import classes from "./TableScrollArea.module.css";
@@ -83,9 +84,12 @@ const PartTable = () => {
   const [OutStockopened, { open: openOutStock, close: closeOutStock }] =
     useDisclosure(false);
 
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession( );
   const UserEmail = session?.user?.email;
   const name = UserEmail?.split("@")[0];
+
+  
+  
 
   const [checked, setChecked] = useState(false);
   const [checkedIn, setCheckedIn] = useState(false);
@@ -294,6 +298,19 @@ const PartTable = () => {
             อ่ะไหล่รถยนต์
           </Text>
         </Group>
+        <Group gap={"xs"}>
+        <Tooltip label="รีเฟรชข้อมูล">
+          <ActionIcon
+            variant="filled"
+            color="blue"
+            onClick={() => {
+              // fetchUser();
+            }}
+            size="lg"
+          >
+            <IconRefresh />
+          </ActionIcon>
+        </Tooltip>
         <Tooltip label="เพิ่มอะไหล่ใหม่">
           <Button
             variant="filled"
@@ -305,6 +322,8 @@ const PartTable = () => {
             เพิ่มอะไหล่ใหม่
           </Button>
         </Tooltip>
+    
+        </Group>
       </Group>
 
       <Group mt={-10} grow>

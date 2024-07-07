@@ -13,54 +13,30 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
-  IconShoppingCartCog,
   IconCar,
   IconEngine,
-  IconTablePlus,
   IconLogout,
   IconUser,
   IconHistory,
-  IconArticleFilled
+  IconArticleFilled,
 } from "@tabler/icons-react";
 import classes from "@css/nav.module.css";
-import { usePathname, useRouter, redirect } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { db } from "@/app/firebase/firebase";
-import { User } from "../type";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  doc,
-  getDoc,
-  setDoc,
-  addDoc,
-  deleteDoc,
-  onSnapshot,
-} from "firebase/firestore";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { data: session, status } = useSession();
+  const { data: session, status  } = useSession();
+
   const router = useRouter();
-  const [users, setUsers] = useState([] as any[] | undefined);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
     }
-    const collectionRef = collection(db, "user");
-    const q = query(collectionRef);
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      setUsers(
-        querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
-      );
-    });
-    return unsubscribe;
   }, [status, router]);
 
   const [opened, { toggle }] = useDisclosure();
@@ -80,13 +56,12 @@ export default function DashboardLayout({
       label: "รายการรถยนต์",
       icon: IconCar,
     },
- 
+
     {
       link: "/dashboard/partHistory",
       label: "ประวัติการเบิก - เติมอะไหล่",
       icon: IconHistory,
     },
-   
   ];
 
   const handleClick = (event: any, index: any) => {
@@ -97,14 +72,15 @@ export default function DashboardLayout({
   const pathname = usePathname();
 
   if (status === "authenticated") {
-    const UserEmail = session?.user?.email;
-    const name = UserEmail?.split("@")[0];
-    const ThisUser = users?.find(
-      (user: User) => user.email === UserEmail
-    ) as User;
-    
+    const thisUser = session?.user as {
+      name: string;
+      email: string;
+      role: string;
+    };
+    const name = thisUser.email.replace("@gmail.com", "");
+    const role = thisUser.role;
 
-    if (ThisUser?.role === "admin") {
+    if (role === "admin") {
       data.push({
         link: "/dashboard/user",
         label: "รายการผู้ใช้งาน",

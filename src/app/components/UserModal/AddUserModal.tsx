@@ -35,18 +35,28 @@ interface ModalProps {
   opened: boolean;
   onClose: () => void;
   title: React.ReactNode;
-  users: User[];
+  Nameusers: string[];
+  fetchUser: () => void;
 }
 
 const AddUserModal: React.FC<ModalProps> = ({
   opened,
   onClose,
   title,
-  users,
+  Nameusers,
+  fetchUser,
 }) => {
-
+  const NameUsers = Nameusers || [];
+  const router = useRouter();
   const schema = z.object({
-    username: z.string().nonempty({ message: "กรุณากรอกชื่อผู้ใช้งาน" }),
+    username: z.string()
+    .nonempty({ message: "กรุณากรอกชื่อผู้ใช้งาน" })
+    .refine((value) => {
+      if(NameUsers.includes(value + "@gmail.com")){
+        return false;
+        }
+        return true;
+        }, { message: "มีผู้ใช้งานนี้อยู่แล้ว" }),
     password: z
       .string()
       .nonempty({ message: "กรุณากรอกรหัสผ่าน" })
@@ -56,8 +66,13 @@ const AddUserModal: React.FC<ModalProps> = ({
       .nonempty({ message: "กรุณายืนยันรหัสผ่าน" })
       .min(6, { message: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" }),
 
+    
+
     role: z.string().nonempty({ message: "กรุณาเลือกสิทธิ์การใช้งาน" }),
-  });
+  }).refine((data) => data.password == data.confirm_password, {
+    message: "รหัสผ่านไม่ตรงกัน",
+    path: ["confirm_password"], 
+  });;
 
   const form = useForm({
     initialValues: {
@@ -69,11 +84,13 @@ const AddUserModal: React.FC<ModalProps> = ({
     validate: zodResolver(schema),
   });
 
-  const handlesubmit = async (data: any, users: User[]) => {
+  const handlesubmit = async (data: any) => {
     try {
+      const email = data.username + "@gmail.com";
+      const password = data.password;
       if (data.password !== data.confirm_password) {
         showNotification({
-          title: "รหัสผ่านไม่ตรงกัน",
+          title: "เพิ่มผู้ใช้งานไม่สำเร็จ",
           message: "กรุณากรอกรหัสผ่านให้ตรงกัน",
           color: "red",
           icon: null,
@@ -81,42 +98,54 @@ const AddUserModal: React.FC<ModalProps> = ({
         return;
       }
 
-      //check if user already exists
+      const resCheckUser = await fetch("http://localhost:3000/api/checkUser", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email }),
+      });
 
-      const username = data.username + "@gmail.com";
-      const user = users.find((user) => user.email === username);
+      const Isuser = await resCheckUser.json();
 
-      if (user) {
+      if (Isuser === null) {
         showNotification({
           title: "เพิ่มผู้ใช้งานไม่สำเร็จ",
           message: "มีผู้ใช้งานนี้อยู่แล้ว",
-          color: "red",
+          color: "yellow",
           icon: null,
         });
         return;
-      }
-      const password = data.password;
-      const response = await createUserWithEmailAndPassword(
-        auth,
-        username,
-        password
-      );
-      if (response) {
-        const CollectionRef = collection(db, "user");
-        const docRef = await addDoc(CollectionRef, {
-          email: username,
-          role: data.role,
-          password: password,
-          timestamp: serverTimestamp(),
+      } else {
+        const res = await fetch("http://localhost:3000/api/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            role: data.role,
+          }),
         });
 
-        showNotification({
-          title: "เพิ่มผู้ใช้งานสำเร็จ",
-          message: "เพิ่มผู้ใช้งานเรียบร้อยแล้ว",
-          color: "green",
-          icon: null,
-        });
+        if (res.ok) {
+          showNotification({
+            title: "เพิ่มผู้ใช้งานสำเร็จ",
+            message: "เพิ่มผู้ใช้งาน " + data.username + " สำเร็จ",
+            color: "green",
+            icon: null,
+          });
+        } else {
+          showNotification({
+            title: "เพิ่มผู้ใช้งานไม่สำเร็จ",
+            message: "เกิดข้อผิดพลาดระหว่างเพิ่มผู้ใช้งาน",
+            color: "red",
+            icon: null,
+          });
+        }
         onClose();
+        fetchUser();
       }
     } catch (error) {
       showNotification({
@@ -125,6 +154,7 @@ const AddUserModal: React.FC<ModalProps> = ({
         color: "red",
         icon: null,
       });
+      fetchUser();
     }
   };
   return (
@@ -133,8 +163,9 @@ const AddUserModal: React.FC<ModalProps> = ({
         onSubmit={(event) => {
           event.preventDefault();
           form.onSubmit((data) => {
-            handlesubmit(data, users);
+            handlesubmit(data);
             form.reset();
+            router.refresh();
           })();
         }}
       >
@@ -172,7 +203,7 @@ const AddUserModal: React.FC<ModalProps> = ({
             <Group justify="space-between" mt={15}>
               {" "}
               <Button color="green" mt="md" type="submit">
-                เพิ่มผู้ใช้งาน
+                เพิ่ม
               </Button>
               <Button color="red" mt="md" onClick={onClose}>
                 ยกเลิก

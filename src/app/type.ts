@@ -1,8 +1,10 @@
+import { Session } from 'next-auth';
+
 export type User = {
-    id: string;
+    _id: string;
     email: string;
     password : string;
-    timestamp: Date;
+    createdAt: Date;
     role : string;
 };
 
@@ -45,6 +47,16 @@ export type PartHistory = {
     salePrice : number;
   
 } 
+
+
+export interface CustomSession extends Session {
+  user: {
+    name?: string | null | undefined;
+    email?: string | null | undefined;
+    image?: string | null | undefined;
+    role?: string; // Add your custom role property here
+  };
+}
 
 
 export const car = [
