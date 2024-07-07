@@ -59,7 +59,7 @@ const CarTable = () => {
 
 
   const rows = filteredCars?.map((Car: Car, index) => (
-    <Table.Tr key={Car.id}>
+    <Table.Tr key={Car._id}>
       <Table.Td ta="center">{index + 1}</Table.Td>
       <Table.Td ta="center">{Car.brand}</Table.Td>
       <Table.Td ta="center">{Car.model}</Table.Td>
