@@ -79,7 +79,7 @@ const PartHistoryTable = () => {
   });
 
   const rows = filteredHistory?.map((history: PartHistory) => (
-    <Table.Tr key={history.id}>
+    <Table.Tr key={history._id}>
       <Table.Td ta="center">
         {" "}
         {new Date(history.timestamp).toLocaleString()}

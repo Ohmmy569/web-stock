@@ -152,7 +152,7 @@ const PartTypeTable = () => {
   }
 
   const rows = filteredParts?.map((Part: Part, index: number) => (
-    <Table.Tr key={Part.id}>
+    <Table.Tr key={Part._id}>
       <Table.Td ta="center">{index + 1}</Table.Td>
       <Table.Td ta="center">{Part.name}</Table.Td>
       <Table.Td ta="center">
@@ -171,7 +171,7 @@ const PartTypeTable = () => {
             <ActionIcon
               variant="filled"
               color="red.8"
-              onClick={() => openDeleteModal(Part.id, Part.name)}
+              onClick={() => openDeleteModal(Part._id, Part.name)}
             >
               <IconTrash />
             </ActionIcon>
