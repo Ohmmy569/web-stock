@@ -22,13 +22,6 @@ import {
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
-import {
-  serverTimestamp,
-  updateDoc,
-  collection,
-  doc,
-  query,
-} from "firebase/firestore";
 import { Car, Part } from "@/app/type";
 
 interface ModalProps {
@@ -41,6 +34,7 @@ interface ModalProps {
   carBrand: string[];
   Cars: Car[] | undefined;
   EditPart: Part;
+  fetchPart : () => void;
 }
 
 function removeDuplicates(arr: any[]) {
@@ -57,6 +51,7 @@ const EditPartModal: React.FC<ModalProps> = ({
   Cars,
   EditPart,
   partCode,
+  fetchPart
 }) => {
   const [CarModel, setCarModel] = useState<string[]>([]);
   const [selectedBrand, setSelectedBrand] = useState<string>(
@@ -108,7 +103,7 @@ const EditPartModal: React.FC<ModalProps> = ({
       brand: EditPart?.brand,
       model: Editmodel as any,
       costPrice: EditPart?.costPrice,
-      salePrice: EditPart?.salePrice,
+      salePrice: EditPart?.sellPrice,
     },
     validate: zodResolver(schema),
   });
@@ -130,11 +125,11 @@ const EditPartModal: React.FC<ModalProps> = ({
       brand: EditPart?.brand,
       model: Editmodel as any,
       costPrice: EditPart?.costPrice,
-      salePrice: EditPart?.salePrice,
+      salePrice: EditPart?.sellPrice,
     });
   }, [selectedBrand, Cars, EditPart]);
 
-  const handlesubmit = async (data: any) => {
+  const handlesubmit = async (data: any , PartId : any) => {
     try {
       if (PartName.includes(data.name)) {
         showNotification({
@@ -152,26 +147,30 @@ const EditPartModal: React.FC<ModalProps> = ({
         model = data.model[0];
       }
 
-      const collectionRef = collection(db, "parts");
-      const docRef = doc(collectionRef, EditPart.id);
-
-      await updateDoc(docRef, {
-        code: data.code,
-        name: data.name,
-        type: data.typeofPart,
-        brand: data.brand,
-        model: model,
-        costPrice: data.costPrice,
-        salePrice: data.salePrice,
-        timestamp: serverTimestamp(),
+      const res = await fetch(`http://localhost:3000/api/parts/${PartId}`,{
+        method: "PUT",
+        body: JSON.stringify({
+          code: data.code,
+          name: data.name,
+          type: data.typeofPart,
+          brand: data.brand,
+          model: model,
+          costPrice: data.costPrice,
+          sellPrice: data.sellPrice,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+      
       showNotification({
         title: "แก้ไขอ่ะไหล่สำเร็จ",
         message: "แก้ไขอ่ะไหล่สำเร็จ " + data.name + " สำเร็จ",
-        color: "blue",
+        color: "green",
         icon: null,
       });
       form.reset();
+      fetchPart();
     } catch (error) {
       showNotification({
         title: "แก้ไขอ่ะไหล่ไม่สำเร็จ",
@@ -188,7 +187,7 @@ const EditPartModal: React.FC<ModalProps> = ({
         onSubmit={(event) => {
           event.preventDefault();
           form.onSubmit((data) => {
-            handlesubmit(data);
+            handlesubmit(data , EditPart._id);
             form.reset();
             onClose();
           })();

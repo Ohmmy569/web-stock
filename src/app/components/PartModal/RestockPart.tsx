@@ -29,6 +29,7 @@ interface ModalProps {
   onClose: () => void;
   title: React.ReactNode;
   username : string;
+  fetchPart : () => void;
 }
 
 const RestockPartModal: React.FC<ModalProps> = ({
@@ -37,6 +38,7 @@ const RestockPartModal: React.FC<ModalProps> = ({
   onClose,
   title,
   username,
+  fetchPart
 }) => {
   const schema = z.object({
     amount: z.number().min(0, { message: "กรุณากรอกจำนวน" }),
@@ -49,31 +51,52 @@ const RestockPartModal: React.FC<ModalProps> = ({
     validate: zodResolver(schema),
   });
 
-  const handlesubmit = async (data: any , current : number , name : string) => {
+  const handlesubmit = async (data: any , current : number , name : string , PartId : any) => {
     try{
-      const collectionRef = collection(db, "parts");
-      const docRef = doc(collectionRef, Part.id);
-      await updateDoc(docRef, {
-        amount: data.amount + current,
+      // const collectionRef = collection(db, "parts");
+      // const docRef = doc(collectionRef, Part.id);
+      // await updateDoc(docRef, {
+      //   amount: data.amount + current,
+      // });
+      // await Addhistory(
+      //   username,
+      //   Part.code,
+      //   Part.type,
+      //   Part.name,
+      //   data.amount,
+      //   Part.brand,
+      //   Part.costPrice,
+      //   Part.salePrice,
+      //   "เติมสินค้า"
+      // );
+      const resRe = await fetch(`http://localhost:3000/api/instock/${PartId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: data.amount + current,
+        }),
       });
-      await Addhistory(
-        username,
-        Part.code,
-        Part.type,
-        Part.name,
-        data.amount,
-        Part.brand,
-        Part.costPrice,
-        Part.salePrice,
-        "เติมสินค้า"
-      );
 
-      showNotification({
-        title: "เติมสินค้าสำเร็จ",
-        message: "เติมสินค้า " + name + " " + data.amount + " ชิ้น",
-        color: "blue",
-        icon: null,
-      });
+      if(resRe.ok){
+        showNotification({
+          title: "เติมสินค้าสำเร็จ",
+          message: "เติมสินค้า " + name + " " + data.amount + " ชิ้น",
+          color: "blue",
+          icon: null,
+        });
+        form.reset();
+      }
+      else{
+        showNotification({
+          title: "เติมสินค้าไม่สำเร็จ",
+          message: "เกิดข้อผิดพลาดระหว่างเติมสินค้า",
+          color: "red",
+          icon: null,
+        });
+      }
+      fetchPart();
       form.reset();
     } catch (error) {
   
@@ -93,7 +116,7 @@ const RestockPartModal: React.FC<ModalProps> = ({
         onSubmit={(event) => {
           event.preventDefault();
           form.onSubmit((data) => {
-            handlesubmit(data , Part.amount , Part.name);
+            handlesubmit(data , Part.amount , Part.name , Part._id);
             form.reset();
             onClose();
           })();

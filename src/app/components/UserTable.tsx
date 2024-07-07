@@ -57,7 +57,7 @@ const UserTable = () => {
       setUsers(data);
     } catch (error: any) {
       showNotification({
-        title: "Failed to fetch users",
+        title: "เรียกข้อมูลผู้ใช้งานไม่สำเร็จ",
         message: error.message,
         color: "red",
       });

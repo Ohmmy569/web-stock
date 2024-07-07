@@ -12,7 +12,7 @@ const partSchema = new Schema(
         },
         type: {
             type: String,
-            default: "user"
+            required: true
         },
         brand:{
             type: String,
@@ -33,7 +33,6 @@ const partSchema = new Schema(
         },
         amount:{
             type: Number,
-            required: false,
             default: 0
         },
     }, 

@@ -28,6 +28,7 @@ interface ModalProps {
   carBrand: string[];
   Cars: Car[] | undefined;
   Code: string[] | undefined;
+  fetchPart : () => void;
 }
 
 function removeDuplicates(arr: any[]) {
@@ -43,6 +44,7 @@ const AddPartModal: React.FC<ModalProps> = ({
   carBrand,
   Cars,
   Code,
+  fetchPart
 }) => {
   const [CarModel, setCarModel] = useState<string[]>([]);
   const [selectedBrand, setSelectedBrand] = useState<string>("");
@@ -126,7 +128,7 @@ const AddPartModal: React.FC<ModalProps> = ({
         body: JSON.stringify({
           code: data.code,
           name: data.name,
-          type: data.type,
+          type: data.typeofPart,
           brand: data.brand,
           model: model,
           costPrice: data.costPrice,
@@ -140,7 +142,7 @@ const AddPartModal: React.FC<ModalProps> = ({
       showNotification({
         title: "เพิ่มอ่ะไหล่สำเร็จ",
         message: "เพิ่มอ่ะไหล่ " + data.name + " สำเร็จ",
-        color: "blue",
+        color: "green",
         icon: null,
       });
     }
@@ -152,6 +154,7 @@ const AddPartModal: React.FC<ModalProps> = ({
         icon: null,
       });
     }
+    fetchPart();
       form.reset();
     } catch (error) {
   
@@ -173,8 +176,6 @@ const AddPartModal: React.FC<ModalProps> = ({
             handlesubmit(data);
             form.reset();
             onClose();
-            router.refresh();
-            
           })();
         }}
       >

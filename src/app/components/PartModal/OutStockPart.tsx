@@ -32,6 +32,7 @@ interface ModalProps {
   onClose: () => void;
   title: React.ReactNode;
   username : string;
+  fetchPart : () => void;
 }
 
 const OutStockPartModal: React.FC<ModalProps> = ({
@@ -40,6 +41,7 @@ const OutStockPartModal: React.FC<ModalProps> = ({
   onClose,
   title,
   username,
+  fetchPart
 }) => {
   const schema = z.object({
     amount: z.number().min(0, { message: "กรุณากรอกจำนวน" }).max(Part.amount, { message: "จำนวนที่เบิกมากกว่าจำนวนที่มีในคลัง" })
@@ -52,37 +54,60 @@ const OutStockPartModal: React.FC<ModalProps> = ({
     validate: zodResolver(schema),
   });
 
-  const handlesubmit = async (data: any , current : number , name : string) => {
+  const handlesubmit = async (data: any , current : number , name : string , PartId : any ) => {
     try{
-      const collectionRef = collection(db, "parts");
-      const docRef = doc(collectionRef, Part.id);
-      await updateDoc(docRef, {
-        amount: current - data.amount,
+      // const collectionRef = collection(db, "parts");
+      // const docRef = doc(collectionRef, Part.id);
+      // await updateDoc(docRef, {
+      //   amount: current - data.amount,
+      // });
+      // await Addhistory(
+      //   username,
+      //   Part.code,
+      //   Part.type,
+      //   Part.name,
+      //   data.amount,
+      //   Part.brand,
+      //   Part.costPrice,
+      //   Part.salePrice,
+      //   "เบิกสินค้า"
+      // );
+      const resRe = await fetch(`http://localhost:3000/api/outstock/${PartId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: current - data.amount,
+        }),
       });
-      await Addhistory(
-        username,
-        Part.code,
-        Part.type,
-        Part.name,
-        data.amount,
-        Part.brand,
-        Part.costPrice,
-        Part.salePrice,
-        "เบิกสินค้า"
-      );
 
-      showNotification({
-        title: "เบิกอ่ะไหล่สำเร็จ",
-        message: "เบิกอ่ะไหล่ " + name + " " + data.amount + " ชิ้น",
-        color: "blue",
-        icon: null,
-      });
+      if(resRe.ok){
+        showNotification({
+          title: "เบิกสินค้าสำเร็จ",
+          message: "เบิกสินค้า " + name + " " + data.amount + " ชิ้น",
+          color: "blue",
+          icon: null,
+        });
+        form.reset();
+      }
+      else{
+        showNotification({
+          title: "เบิกสินค้าไม่สำเร็จ",
+          message: "เกิดข้อผิดพลาดระหว่างเบิกสินค้า",
+          color: "red",
+          icon: null,
+        });
+      }
+      fetchPart();
       form.reset();
+
+    
     } catch (error) {
   
       form.reset();
       showNotification({
-        title: "เบิกอ่ะไหล่ไม่สำเร็จ",
+        title: "เบิกสินค้าสำเร็จ",
         message: "เกิดข้อผิดพลาดระหว่างเบิกอ่ะไหล่",
         color: "red",
         icon: null,
@@ -96,7 +121,7 @@ const OutStockPartModal: React.FC<ModalProps> = ({
         onSubmit={(event) => {
           event.preventDefault();
           form.onSubmit((data) => {
-            handlesubmit(data , Part.amount , Part.name);
+            handlesubmit(data , Part.amount , Part.name , Part._id);
             form.reset();
             onClose();
           })();

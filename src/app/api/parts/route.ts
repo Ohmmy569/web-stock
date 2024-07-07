@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
         model,
         costPrice,
         sellPrice,
+        amount : 0
     });
 
     return NextResponse.json({ message: "Part created." }, { status: 201 });

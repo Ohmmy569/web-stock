@@ -50,7 +50,6 @@ import EditPartModal from "@components/PartModal/EditPartModal";
 import RestockPartModal from "@components/PartModal/RestockPart";
 import OutStockPartModal from "./PartModal/OutStockPart";
 import { modals } from "@mantine/modals";
-import { set } from "zod";
 import { showNotification } from "@mantine/notifications";
 
 function removeDuplicates(arr: any[]) {
@@ -94,46 +93,28 @@ const PartTable = () => {
   const [checked, setChecked] = useState(false);
   const [checkedIn, setCheckedIn] = useState(false);
 
-  useEffect(() => {
-    const unsubscribeParts = queryCollection("parts", setParts);
-    const unsubscribeTypeofParts = queryCollection(
-      "typeofparts",
-      setTypeofParts
-    );
-    const unsubscribeCode = queryCollection("partCode", setPartCode);
-
-    return () => {
-      unsubscribeParts();
-      unsubscribeTypeofParts();
-      unsubscribeCode();
-    };
-  }, []);
-
-  const queryCollection = <T,>(
-    collectionName: string,
-    setState: React.Dispatch<React.SetStateAction<T[] | undefined>>
-  ) => {
+  const fetchPart = async () => {
     try {
-      const collectionRef = collection(db, collectionName);
-      const q = query(collectionRef);
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        setState(
-          querySnapshot.docs.map((doc) => ({
-            ...doc.data(),
-            id: doc.id,
-          })) as T[]
-        );
+      const res = await fetch("http://localhost:3000/api/parts", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
-      return unsubscribe;
+      const data = (await res.json()) as Part[];
+      setParts(data);
     } catch (error: any) {
       showNotification({
-        title: `เกิดข้อผิดพลาดในการดึงข้อมูลจาก ${collectionName}`,
+        title: "เกิดข้อผิดพลาดในการดึงข้อมูลอ่ะไหล่รถยนต์",
         message: error.message,
         color: "red",
       });
-      return () => {};
     }
   };
+
+  useEffect(() => {
+    fetchPart();
+  }, []);
 
   const ModalCars = Cars;
   const ModalcarBrand = removeDuplicates(
@@ -196,14 +177,47 @@ const PartTable = () => {
       confirmProps: { color: "red" },
       onCancel: () => onclose,
       onConfirm: () => {
-        removePart(PartId);
+        removePart(PartId , Partname);
         onclose;
       },
     });
   };
 
+  
+  async function removePart(PartId: any , Partname: any) {
+    try {
+      const res = await fetch(`http://localhost:3000/api/parts/${PartId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+      });
+      if (res.ok) {
+        showNotification({
+          title: "ลบรายการอ่ะไหล่สำเร็จ",
+          message: "ลบรายการอ่ะไหล่ " + Partname + " แล้ว",
+          color: "green",
+        });
+        fetchPart();
+      } else {
+        showNotification({
+          title: "ลบรายการอ่ะไหล่ไม่สำเร็จ",
+          message: "เกิดข้อผิดพลาดในการลบอ่ะไหล่",
+          color: "red",
+        });
+      }
+    } catch (error: any) {
+      showNotification({
+        title: "เกิดข้อผิดพลาดในการลบอ่ะไหล่รถยนต์",
+        message: error.message,
+        color: "red",
+      });
+    }
+  }
+
   const rows = filteredParts?.map((Part: Part) => (
-    <Table.Tr key={Part.id}>
+    <Table.Tr key={Part._id}>
       <Table.Td ta="center" align="center">
         {Part.code}
       </Table.Td>
@@ -224,7 +238,7 @@ const PartTable = () => {
         <NumberFormatter thousandSeparator suffix=" ฿" value={Part.costPrice} />
       </Table.Td>
       <Table.Td ta="center" align="center">
-        <NumberFormatter thousandSeparator suffix=" ฿" value={Part.salePrice} />
+        <NumberFormatter thousandSeparator suffix=" ฿" value={Part.sellPrice} />
       </Table.Td>
       <Table.Td ta="center" align="center">
         {Part.amount}
@@ -246,7 +260,7 @@ const PartTable = () => {
               variant="filled"
               color="red.8"
               onClick={() =>
-                openDeleteModal(Part.id, Part.code + " " + Part.name)
+                openDeleteModal(Part._id, Part.code + " " + Part.name)
               }
             >
               <IconTrash />
@@ -276,18 +290,6 @@ const PartTable = () => {
     </Table.Tr>
   ));
 
-  async function removePart(PartId: any) {
-    try {
-      const docRef = doc(db, "parts", PartId);
-      await deleteDoc(docRef);
-    } catch (error: any) {
-      showNotification({
-        title: "เกิดข้อผิดพลาดในการลบอ่ะไหล่รถยนต์",
-        message: error.message,
-        color: "red",
-      });
-    }
-  }
 
   return (
     <Stack align="stretch" justify="center" gap="md">
@@ -304,7 +306,7 @@ const PartTable = () => {
             variant="filled"
             color="blue"
             onClick={() => {
-              // fetchUser();
+              fetchPart();
             }}
             size="lg"
           >
@@ -415,6 +417,7 @@ const PartTable = () => {
         carBrand={ModalcarBrand}
         Cars={ModalCars}
         Code={modalCode}
+        fetchPart={fetchPart}
       />
 
       <EditPartModal
@@ -432,6 +435,7 @@ const PartTable = () => {
         typeofPart={ModalTypeofParts}
         carBrand={ModalcarBrand}
         Cars={ModalCars}
+        fetchPart={fetchPart}
       />
       <RestockPartModal
         opened={Restockopened}
@@ -439,6 +443,8 @@ const PartTable = () => {
         title={<Text fw={900}> เติมสินค้า {RestockPart.name} </Text>}
         Part={RestockPart}
         username={name as string}
+        fetchPart={fetchPart}
+
       />
       <OutStockPartModal
         opened={OutStockopened}
@@ -446,6 +452,7 @@ const PartTable = () => {
         title={<Text fw={900}> เบิกสินค้า {RestockPart.name} </Text>}
         Part={RestockPart}
         username={name as string}
+        fetchPart={fetchPart}
       />
     </Stack>
   );

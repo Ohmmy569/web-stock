@@ -9,32 +9,32 @@ export type User = {
 };
 
 export type Car = {
-    id : string;
+    _id : string;
     brand : string;
     model : string;
 }
 
 export type Part = {
-    id : string;
+    _id : string;
     code : string;
     name : string;
     type : string;
     brand : string;
     model : string;
     costPrice : number;
-    salePrice : number;
+    sellPrice : number;
     amount : number;
 }
 
 
 
 export type PartType = {
-    id : string;
+    _id : string;
     name : string;
 }
 
 export type PartHistory = {
-    id : string;
+    _id : string;
     timestamp : Date;
     username : string;
     action : string;
@@ -49,14 +49,6 @@ export type PartHistory = {
 } 
 
 
-export interface CustomSession extends Session {
-  user: {
-    name?: string | null | undefined;
-    email?: string | null | undefined;
-    image?: string | null | undefined;
-    role?: string; // Add your custom role property here
-  };
-}
 
 
 export const car = [
