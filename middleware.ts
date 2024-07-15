@@ -11,13 +11,15 @@ export async function middleware(req: NextRequest) {
 
   // Allow access to authentication-related API routes even if the user is not authenticated
   if (!user && path.startsWith("/api/auth")) {
+    console.log("not authenticated but accessing auth route");
     return NextResponse.next();
   }
 
   // Redirect unauthenticated users trying to access protected routes to the login page
   if (!user) {
-
+    console.log("not authenticated");
     if(path.startsWith("/api")) {
+      console.log("not authenticated but accessing api route");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     return NextResponse.redirect(new URL("/login", req.url));
@@ -25,10 +27,12 @@ export async function middleware(req: NextRequest) {
 
   // Redirect authenticated users trying to access the login page to the dashboard
   if (user && path === "/login") {
+    console.log("authenticated but accessing login page");
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   // Allow access to other routes
+  console.log("authenticated");
   return NextResponse.next();
 }
 
