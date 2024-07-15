@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectMongoDB } from "@lib/connectDB";
-import Part from "@lib/models/part";
+import TypePart from "@lib/models/typeofparts";
 
 export async function DELETE(
   req: NextRequest,
@@ -9,11 +9,11 @@ export async function DELETE(
   try {
     const { id } = params;
     await connectMongoDB();
-    const part = await Part.deleteOne({ _id: id });
-    return NextResponse.json(part);
+    const typePart = await TypePart.deleteOne({ _id: id });
+    return NextResponse.json(typePart);
   } catch (error) {
     return NextResponse.json(
-      { message: "An error occured while deleting part" },
+      { message: "An error occured while deleting TypeOfPart" },
       { status: 500 }
     );
   }
@@ -25,33 +25,19 @@ export async function PUT(
 ) {
   try {
     const { id } = params;
-    const { 
-      code,
-      name,
-      type,
-      brand,
-      model,
-      costPrice,
-      sellPrice,
-     } = await req.json();
+    const { name } = await req.json();
+    console.log("name : ", name
+    )
+    console.log("id : ", id)
     await connectMongoDB();
-    const part = await Part.findByIdAndUpdate(id, {
-      code,
+    const typePart = await TypePart.findByIdAndUpdate(id, {
       name,
-      type,
-      brand,
-      model,
-      costPrice,
-      sellPrice,
-     });
-    return NextResponse.json(part);
+    });
+    return NextResponse.json(typePart);
   } catch (error) {
     return NextResponse.json(
-      { message: "An error occured while updating the part." },
+      { message: "An error occured while updating the TypeOfPart." },
       { status: 500 }
     );
   }
 }
-
-
-

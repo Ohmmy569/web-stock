@@ -1,7 +1,4 @@
 "use client";
-import { useEffect, useState } from "react";
-import { db } from "@/app/firebase/firebase";
-
 import {
   Box,
   Button,
@@ -13,15 +10,8 @@ import {
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
-import {
-  serverTimestamp,
-  updateDoc,
-  collection,
-  doc,
-  query,
-} from "firebase/firestore";
 import { Part } from "@/app/type";
-import { Addhistory } from "@/app/calcu/addhistory";
+import { AddRehistory } from "@/app/calcu/addRehistory";
 
 interface ModalProps {
   Part : Part;
@@ -53,22 +43,7 @@ const RestockPartModal: React.FC<ModalProps> = ({
 
   const handlesubmit = async (data: any , current : number , name : string , PartId : any) => {
     try{
-      // const collectionRef = collection(db, "parts");
-      // const docRef = doc(collectionRef, Part.id);
-      // await updateDoc(docRef, {
-      //   amount: data.amount + current,
-      // });
-      // await Addhistory(
-      //   username,
-      //   Part.code,
-      //   Part.type,
-      //   Part.name,
-      //   data.amount,
-      //   Part.brand,
-      //   Part.costPrice,
-      //   Part.salePrice,
-      //   "เติมสินค้า"
-      // );
+ 
       const resRe = await fetch(`http://localhost:3000/api/instock/${PartId}`, {
         method: "PUT",
         headers: {
@@ -80,6 +55,17 @@ const RestockPartModal: React.FC<ModalProps> = ({
       });
 
       if(resRe.ok){
+        await AddRehistory(
+          username,
+          Part.code,
+          Part.type,
+          Part.name,
+          data.amount,
+          Part.brand,
+          Part.costPrice,
+          Part.sellPrice,
+          "เติมสินค้า"
+        );
         showNotification({
           title: "เติมสินค้าสำเร็จ",
           message: "เติมสินค้า " + name + " " + data.amount + " ชิ้น",
@@ -103,7 +89,7 @@ const RestockPartModal: React.FC<ModalProps> = ({
       form.reset();
       showNotification({
         title: "เติมอ่ะไหล่ไม่สำเร็จ",
-        message: "เกิดข้อผิดพลาดระหว่างเติมอ่ะไหล่",
+        message: "เกิดข้อผิดพลาดระหว่างเติมอ่ะไหล่" + error,
         color: "red",
         icon: null,
       });
@@ -125,7 +111,7 @@ const RestockPartModal: React.FC<ModalProps> = ({
         <Box>
           <NumberInput
           description={"อยู่ในคลัง : " + Part?.amount + " ชิ้น"}
-            label="จำนวน"
+            label="จำนวนoooo"
             placeholder="จำนวน"
             required
             {...form.getInputProps("amount")}

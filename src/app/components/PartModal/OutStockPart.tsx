@@ -1,38 +1,19 @@
 "use client";
-import { useEffect, useState } from "react";
-import { db } from "@/app/firebase/firebase";
 
-import {
-  Box,
-  Button,
-  Center,
-  Group,
-  Modal,
-  NumberInput,
-  Select,
-  TextInput,
-  MultiSelect,
-} from "@mantine/core";
+import { Box, Button, Center, Group, Modal, NumberInput } from "@mantine/core";
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
-import {
-  serverTimestamp,
-  updateDoc,
-  collection,
-  doc,
-  query,
-} from "firebase/firestore";
 import { Part } from "@/app/type";
-import { Addhistory } from "@/app/calcu/addhistory";
+import { AddOuhistory } from "@/app/calcu/addOuhistory";
 
 interface ModalProps {
-  Part : Part;
+  Part: Part;
   opened: boolean;
   onClose: () => void;
   title: React.ReactNode;
-  username : string;
-  fetchPart : () => void;
+  username: string;
+  fetchPart: () => void;
 }
 
 const OutStockPartModal: React.FC<ModalProps> = ({
@@ -41,10 +22,13 @@ const OutStockPartModal: React.FC<ModalProps> = ({
   onClose,
   title,
   username,
-  fetchPart
+  fetchPart,
 }) => {
   const schema = z.object({
-    amount: z.number().min(0, { message: "กรุณากรอกจำนวน" }).max(Part.amount, { message: "จำนวนที่เบิกมากกว่าจำนวนที่มีในคลัง" })
+    amount: z
+      .number()
+      .min(0, { message: "กรุณากรอกจำนวน" })
+      .max(Part.amount, { message: "จำนวนที่เบิกมากกว่าจำนวนที่มีในคลัง" }),
   });
 
   const form = useForm({
@@ -54,8 +38,13 @@ const OutStockPartModal: React.FC<ModalProps> = ({
     validate: zodResolver(schema),
   });
 
-  const handlesubmit = async (data: any , current : number , name : string , PartId : any ) => {
-    try{
+  const handlesubmit = async (
+    data: any,
+    current: number,
+    name: string,
+    PartId: any
+  ) => {
+    try {
       // const collectionRef = collection(db, "parts");
       // const docRef = doc(collectionRef, Part.id);
       // await updateDoc(docRef, {
@@ -72,17 +61,31 @@ const OutStockPartModal: React.FC<ModalProps> = ({
       //   Part.salePrice,
       //   "เบิกสินค้า"
       // );
-      const resRe = await fetch(`http://localhost:3000/api/outstock/${PartId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: current - data.amount,
-        }),
-      });
+      const resRe = await fetch(
+        `http://localhost:3000/api/outstock/${PartId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            amount: current - data.amount,
+          }),
+        }
+      );
 
-      if(resRe.ok){
+      if (resRe.ok) {
+        await AddOuhistory(
+          username,
+          Part.code,
+          Part.type,
+          Part.name,
+          data.amount,
+          Part.brand,
+          Part.costPrice,
+          Part.sellPrice,
+          "เบิกสินค้า"
+        );
         showNotification({
           title: "เบิกสินค้าสำเร็จ",
           message: "เบิกสินค้า " + name + " " + data.amount + " ชิ้น",
@@ -90,8 +93,7 @@ const OutStockPartModal: React.FC<ModalProps> = ({
           icon: null,
         });
         form.reset();
-      }
-      else{
+      } else {
         showNotification({
           title: "เบิกสินค้าไม่สำเร็จ",
           message: "เกิดข้อผิดพลาดระหว่างเบิกสินค้า",
@@ -101,14 +103,11 @@ const OutStockPartModal: React.FC<ModalProps> = ({
       }
       fetchPart();
       form.reset();
-
-    
     } catch (error) {
-  
       form.reset();
       showNotification({
-        title: "เบิกสินค้าสำเร็จ",
-        message: "เกิดข้อผิดพลาดระหว่างเบิกอ่ะไหล่",
+        title: "เบิกสินค้าไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดระหว่างเบิกอ่ะไหล่" + error,
         color: "red",
         icon: null,
       });
@@ -121,7 +120,7 @@ const OutStockPartModal: React.FC<ModalProps> = ({
         onSubmit={(event) => {
           event.preventDefault();
           form.onSubmit((data) => {
-            handlesubmit(data , Part.amount , Part.name , Part._id);
+            handlesubmit(data, Part.amount, Part.name, Part._id);
             form.reset();
             onClose();
           })();
@@ -129,13 +128,13 @@ const OutStockPartModal: React.FC<ModalProps> = ({
       >
         <Box>
           <NumberInput
-          description={"อยู่ในคลัง : " + Part?.amount + " ชิ้น"}
+            description={"อยู่ในคลัง : " + Part?.amount + " ชิ้น"}
             label="จำนวน"
             placeholder="จำนวน"
             required
             {...form.getInputProps("amount")}
             min={0}
-            />
+          />
           <Center>
             <Group justify="space-between" mt={15}>
               <Button color="green" mt="md" type="submit">

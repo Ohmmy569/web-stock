@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  ActionIcon,
   Group,
   Paper,
   Select,
@@ -7,17 +8,12 @@ import {
   Table,
   Text,
   TextInput,
+  Tooltip,
 } from "@mantine/core";
-import {
-  IconSearch,
-  IconCar,
-  IconHistory,
-} from "@tabler/icons-react";
+import { IconSearch, IconHistory, IconRefresh } from "@tabler/icons-react";
 
 import { PartHistory } from "@/app/type";
-import { collection, onSnapshot, query } from "firebase/firestore";
 import { showNotification } from "@mantine/notifications";
-import { db } from "../firebase/firebase";
 
 const PartHistoryTable = () => {
   const [History, setHistory] = useState([] as any[] | undefined);
@@ -26,39 +22,40 @@ const PartHistoryTable = () => {
   const [sortbyDate, setSortbyDate] = useState("desc");
   const [action, setAction] = useState("all");
 
-  useEffect(() => {
-    const unsubscribePartsType = queryCollection("history", setHistory);
-    return () => {
-      unsubscribePartsType();
-    };
-  }, []);
-
-  const queryCollection = <T,>(
-    collectionName: string,
-    setState: React.Dispatch<React.SetStateAction<T[] | undefined>>
-  ) => {
+  const fetchHistory = async () => {
     try {
-      const collectionRef = collection(db, collectionName);
-      const q = query(collectionRef);
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        setState(
-          querySnapshot.docs.map((doc) => ({
-            ...doc.data(),
-            id: doc.id,
-            timestamp: doc.data().timestamp?.toDate().getTime(),
-          })) as T[]
-        );
+      const resHistory = await fetch("/api/addhistory", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
-      return unsubscribe;
+
+      if (!resHistory.ok) {
+        showNotification({
+          title: "เกิดข้อผิดพลาดในการดึงข้อมูลประวัติ",
+          message: "เกิดข้อผิดพลาดในการดึงข้อมูลประวัติ",
+          color: "red",
+        });
+        return;
+      }
+
+      const dataHistory = (await resHistory.json()) as History[];
+
+      setHistory(dataHistory);
     } catch (error: any) {
       showNotification({
-        title: `เกิดข้อผิดพลาดในการดึงข้อมูลจาก ${collectionName}`,
+        title: "เกิดข้อผิดพลาดในการดึงข้อมูลประวัติ",
         message: error.message,
         color: "red",
       });
-      return () => {};
     }
   };
+
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let value = event.target.value.replace(/\s/g, "");
     setSearch(value);
@@ -71,10 +68,12 @@ const PartHistoryTable = () => {
       (action === "all" || history.action === action)
     );
   }).sort((a, b) => {
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
     if (sortbyDate === "asc") {
-      return a.timestamp - b.timestamp;
+      return dateA - dateB;
     } else {
-      return b.timestamp - a.timestamp;
+      return dateB - dateA;
     }
   });
 
@@ -82,23 +81,21 @@ const PartHistoryTable = () => {
     <Table.Tr key={history._id}>
       <Table.Td ta="center">
         {" "}
-        {new Date(history.timestamp).toLocaleString()}
+        {new Date(history.createdAt).toLocaleString()}
       </Table.Td>
-      <Table.Td ta="center">{history.username}</Table.Td>
-      <Table.Td ta="center">
-        {history.action == "เบิกสินค้า" ? (
-          <Text color="red" fw={900}>
-            {history.action}
-          </Text>
-        ) : (
-          <Text color="green" fw={900}>
-            {history.action}
-          </Text>
-        )}
-      </Table.Td>
+      <Table.Td ta="center">{history.user}</Table.Td>
+      {history.action == "เบิกสินค้า" ? (
+        <Table.Td ta="center" c={"red"} fw={700}>{history.action}</Table.Td>
+      ) : (
+        <Table.Td ta="center"  c={"green"} fw={700}>{history.action}</Table.Td>
+      )}
       <Table.Td ta="center">{history.partCode}</Table.Td>
       <Table.Td ta="center">{history.partName}</Table.Td>
-      <Table.Td ta="center">{history.amount}</Table.Td>
+      {history.action == "เบิกสินค้า" ? (
+        <Table.Td ta="center" c={"red"} fw={700}>{history.amount}</Table.Td>
+      ) : (
+        <Table.Td ta="center"  c={"green"} fw={700}>{history.amount}</Table.Td>
+      )}
     </Table.Tr>
   ));
 
@@ -111,6 +108,18 @@ const PartHistoryTable = () => {
             ประวัติการเบิก - เติมอะไหล่
           </Text>
         </Group>
+        <Tooltip label="รีเฟรชข้อมูล">
+          <ActionIcon
+            variant="filled"
+            color="blue"
+            onClick={() => {
+              fetchHistory();
+            }}
+            size="lg"
+          >
+            <IconRefresh />
+          </ActionIcon>
+        </Tooltip>
       </Group>
 
       <Group mt={-10} grow>
@@ -141,11 +150,11 @@ const PartHistoryTable = () => {
         <Select
           placeholder="เลือกเรียงตามวันที่ / เวลา"
           data={[
-            { label: "จากใหม่สุดไปเก่าสุด", value: "desc" },
-            { label: "จากเก่าสุดไปใหม่สุด", value: "asc" },
+            { label: "ใหม่ไปเก่า", value: "desc" },
+            { label: "เก่าไปใหม่", value: "asc" },
           ]}
           label="เลือกเรียงตามวันที่ / เวลา"
-          defaultValue={"desc"}
+          defaultValue={"asc"}
           onChange={(value) => setSortbyDate(value as string)}
         />
         <Text>&nbsp;</Text>
@@ -166,7 +175,6 @@ const PartHistoryTable = () => {
           <Table.Tbody>{rows}</Table.Tbody>
         </Table>
       </Paper>
-
     </Stack>
   );
 };

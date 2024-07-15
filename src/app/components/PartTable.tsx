@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
   ActionIcon,
-  Badge,
   Button,
-  Card,
   Group,
-  Modal,
   NumberFormatter,
   Paper,
-  ScrollArea,
   Select,
   Stack,
-  Switch,
   Table,
   Text,
   TextInput,
@@ -27,21 +22,9 @@ import {
   IconPlus,
   IconRefresh,
 } from "@tabler/icons-react";
-import cx from "clsx";
-import classes from "./TableScrollArea.module.css";
 import { Part, Car } from "../type";
-import { useSession, signOut } from "next-auth/react";
-import {
-  Timestamp,
-  collection,
-  onSnapshot,
-  query,
-  deleteDoc,
-  doc,
-  addDoc,
-} from "firebase/firestore";
+import { useSession } from "next-auth/react";
 
-import { db } from "../firebase/firebase";
 import { useDisclosure } from "@mantine/hooks";
 import { car } from "../type";
 
@@ -83,26 +66,51 @@ const PartTable = () => {
   const [OutStockopened, { open: openOutStock, close: closeOutStock }] =
     useDisclosure(false);
 
-  const { data: session, status } = useSession( );
+  const { data: session, status } = useSession();
   const UserEmail = session?.user?.email;
   const name = UserEmail?.split("@")[0];
-
-  
-  
 
   const [checked, setChecked] = useState(false);
   const [checkedIn, setCheckedIn] = useState(false);
 
   const fetchPart = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/parts", {
+      const resPart = await fetch("/api/parts", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
       });
-      const data = (await res.json()) as Part[];
-      setParts(data);
+
+      const resType = await fetch("/api/typeofparts", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!resPart.ok) {
+        showNotification({
+          title: "เกิดข้อผิดพลาดในการดึงข้อมูลอ่ะไหล่รถยนต์",
+          message: "เกิดข้อผิดพลาดในการดึงข้อมูลอ่ะไหล่รถยนต์",
+          color: "red",
+        });
+        return;
+      }
+      if (!resType.ok) {
+        showNotification({
+          title: "เกิดข้อผิดพลาดในการดึงข้อมูลประเภทอ่ะไหล่",
+          message: "เกิดข้อผิดพลาดในการดึงข้อมูลประเภทอ่ะไหล่",
+          color: "red",
+        });
+        return;
+      }
+
+      const dataPart = (await resPart.json()) as Part[];
+      const dataType = (await resType.json()) as any[];
+
+      setParts(dataPart);
+      setTypeofParts(dataType);
     } catch (error: any) {
       showNotification({
         title: "เกิดข้อผิดพลาดในการดึงข้อมูลอ่ะไหล่รถยนต์",
@@ -177,16 +185,15 @@ const PartTable = () => {
       confirmProps: { color: "red" },
       onCancel: () => onclose,
       onConfirm: () => {
-        removePart(PartId , Partname);
+        removePart(PartId, Partname);
         onclose;
       },
     });
   };
 
-  
-  async function removePart(PartId: any , Partname: any) {
+  async function removePart(PartId: any, Partname: any) {
     try {
-      const res = await fetch(`http://localhost:3000/api/parts/${PartId}`, {
+      const res = await fetch(`/api/parts/${PartId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -290,7 +297,6 @@ const PartTable = () => {
     </Table.Tr>
   ));
 
-
   return (
     <Stack align="stretch" justify="center" gap="md">
       <Group justify="space-between">
@@ -301,30 +307,29 @@ const PartTable = () => {
           </Text>
         </Group>
         <Group gap={"xs"}>
-        <Tooltip label="รีเฟรชข้อมูล">
-          <ActionIcon
-            variant="filled"
-            color="blue"
-            onClick={() => {
-              fetchPart();
-            }}
-            size="lg"
-          >
-            <IconRefresh />
-          </ActionIcon>
-        </Tooltip>
-        <Tooltip label="เพิ่มอะไหล่ใหม่">
-          <Button
-            variant="filled"
-            color="green"
-            radius="md"
-            leftSection={<IconPlus size={20} stroke={2.5} />}
-            onClick={() => openAdd()}
-          >
-            เพิ่มอะไหล่ใหม่
-          </Button>
-        </Tooltip>
-    
+          <Tooltip label="รีเฟรชข้อมูล">
+            <ActionIcon
+              variant="filled"
+              color="blue"
+              onClick={() => {
+                fetchPart();
+              }}
+              size="lg"
+            >
+              <IconRefresh />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="เพิ่มอะไหล่ใหม่">
+            <Button
+              variant="filled"
+              color="green"
+              radius="md"
+              leftSection={<IconPlus size={20} stroke={2.5} />}
+              onClick={() => openAdd()}
+            >
+              เพิ่มอะไหล่ใหม่
+            </Button>
+          </Tooltip>
         </Group>
       </Group>
 
@@ -387,7 +392,6 @@ const PartTable = () => {
           searchable
         />
       </Group>
-     
 
       <Paper shadow="sm" radius="md" p={"sm"} withBorder>
         <Table highlightOnHover stickyHeader striped stickyHeaderOffset={55}>
@@ -444,7 +448,6 @@ const PartTable = () => {
         Part={RestockPart}
         username={name as string}
         fetchPart={fetchPart}
-
       />
       <OutStockPartModal
         opened={OutStockopened}

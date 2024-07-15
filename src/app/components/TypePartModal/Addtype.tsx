@@ -1,36 +1,26 @@
 "use client";
 import { db } from "@/app/firebase/firebase";
 
-import {
-  Box,
-  Button,
-  Center,
-  Group,
-  Modal,
-  TextInput,
-} from "@mantine/core";
+import { Box, Button, Center, Group, Modal, TextInput } from "@mantine/core";
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
-import {
-  addDoc,
-  serverTimestamp,
-  collection,
-} from "firebase/firestore";
+import { addDoc, serverTimestamp, collection } from "firebase/firestore";
 
 interface ModalProps {
   opened: boolean;
   onClose: () => void;
   title: React.ReactNode;
   typeName: string[] | undefined;
+  fetchPartType: () => void;
 }
-
 
 const AddTypePartModal: React.FC<ModalProps> = ({
   opened,
   onClose,
   title,
   typeName,
+  fetchPartType,
 }) => {
   const TypeName = typeName || [];
 
@@ -46,16 +36,15 @@ const AddTypePartModal: React.FC<ModalProps> = ({
           return true; // Valid if the name doesn't exist in Partname
         },
         { message: "ชื่อประเภทซ้ำ" }
-      )
+      ),
   });
 
   const form = useForm({
     initialValues: {
-      name: ""
+      name: "",
     },
     validate: zodResolver(schema),
   });
-
 
   const handlesubmit = async (data: any) => {
     try {
@@ -69,20 +58,33 @@ const AddTypePartModal: React.FC<ModalProps> = ({
         return;
       }
 
-      const collectionRef = collection(db, "typeofparts");
-      await addDoc(collectionRef, {
-        name: data.name,
-        timestamp: serverTimestamp(),
+      const resType = await fetch("/api/typeofparts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: data.name,
+        }),
       });
-      showNotification({
-        title: "เพิ่มประเภทอ่ะไหล่สำเร็จ",
-        message: "เพิ่มประเภท " + data.name + " สำเร็จ",
-        color: "blue",
-        icon: null,
-      });
-      form.reset();
+      if (resType.ok) {
+        showNotification({
+          title: "เพิ่มประเภทอ่ะไหล่สำเร็จ",
+          message: "เพิ่มประเภท " + data.name + " สำเร็จ",
+          color: "green",
+          icon: null,
+        });
+        form.reset();
+        fetchPartType();
+      } else {
+        showNotification({
+          title: "เพิ่มประเภทอ่ะไม่ไหล่สำเร็จ",
+          message: "เกิดข้อผิดพลาดระหว่างเพิ่มประเภทอ่ะไหล่",
+          color: "red",
+          icon: null,
+        });
+      }
     } catch (error) {
-  
       showNotification({
         title: "เพิ่มประเภทอ่ะไหล่สำเร็จ",
         message: "เกิดข้อผิดพลาดระหว่างเพิ่มประเภทอ่ะไหล่",

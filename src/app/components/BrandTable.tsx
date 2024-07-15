@@ -26,6 +26,7 @@ import {
   IconArticleFilled,
   IconPlus,
   IconRefresh,
+  IconBrandToyota,
 } from "@tabler/icons-react";
 
 import { useDisclosure } from "@mantine/hooks";
@@ -34,24 +35,24 @@ import AddTypePartModal from "@components/TypePartModal/Addtype";
 import EditTypePartModal from "@components/TypePartModal/EditType";
 import { modals } from "@mantine/modals";
 import { showNotification } from "@mantine/notifications";
-import { PartType } from "@/app/type";
+import { CarBrand } from "@/app/type";
 
-const PartTypeTable = () => {
-  const [PartType, setPartType] = useState([] as any[] | undefined);
+const BrandTable = () => {
+  const [CarBrand, setCarBrand] = useState([] as any[] | undefined);
   const [TypeName, setTypeName] = useState([] as any[] | undefined);
 
   const [search, setSearch] = useState("");
-  const [editPartType, setEditPartType] = useState({} as PartType);
+  const [editCarBrand, setEditCarBrand] = useState({} as CarBrand);
 
   const [Addopened, { open: openAdd, close: closeAdd }] = useDisclosure(false);
   const [Editopened, { open: openEdit, close: closeEdit }] =
     useDisclosure(false);
 
-  const fetchPartType = async () => {
+  const fetchCarBrand = async () => {
     const res = await fetch("http://localhost:3000/api/typeofparts", {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type" : "application/json",
       },
     });
     if (!res.ok) {
@@ -63,11 +64,11 @@ const PartTypeTable = () => {
       return;
     }
     const data = await res.json();
-    setPartType(data);
+    setCarBrand(data);
   };
 
   useEffect(() => {
-    fetchPartType();
+    fetchCarBrand();
   }, []);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,24 +76,24 @@ const PartTypeTable = () => {
     setSearch(value);
   };
 
-  const filteredParts = PartType?.filter((PartType: PartType) => {
-    const searchFields = Object.values(PartType).join("").toLowerCase();
+  const filteredParts = CarBrand?.filter((CarBrand: CarBrand) => {
+    const searchFields = Object.values(CarBrand).join("").toLowerCase();
 
     return searchFields.includes(search.toLowerCase());
   });
 
-  function OpenEdit(PartTypeIN: PartType) {
-    setEditPartType(PartTypeIN);
-    setTypeName(PartType?.map((PartType: PartType) => PartType.name) || []);
+  function OpenEdit(CarBrandIN: CarBrand) {
+    setEditCarBrand(CarBrandIN);
+    setTypeName(CarBrand?.map((CarBrand: CarBrand) => CarBrand.name) || []);
     openEdit();
   }
 
   function OpenAdd() {
-    setTypeName(PartType?.map((PartType: PartType) => PartType.name) || []);
+    setTypeName(CarBrand?.map((CarBrand: CarBrand) => CarBrand.name) || []);
     openAdd();
   }
 
-  const openDeleteModal = (PartTypeId: any, Partname: any) => {
+  const openDeleteModal = (CarBrandId: any, Partname: any) => {
     modals.openConfirmModal({
       title: <Text fw={900}> ลบประเภทอ่ะไหล่ </Text>,
       centered: true,
@@ -105,14 +106,14 @@ const PartTypeTable = () => {
       confirmProps: { color: "red" },
       onCancel: () => onclose,
       onConfirm: () => {
-        removePart(PartTypeId, Partname);
+        removePart(CarBrandId, Partname);
         onclose;
       },
     });
   };
-  async function removePart(PartTypeId: any, PartTypename: any) {
+  async function removePart(CarBrandId: any, CarBrandname: any) {
     try {
-      const res = await fetch(`/api/typeofparts/${PartTypeId}`, {
+      const res = await fetch(`/api/typeofparts/${CarBrandId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -123,10 +124,10 @@ const PartTypeTable = () => {
       if (res.ok) {
         showNotification({
           title: "ลบประเภทอ่ะไหล่สำเร็จ",
-          message: "ลบประเภท " + PartTypename + " สำเร็จ",
+          message: "ลบประเภท " + CarBrandname + " สำเร็จ",
           color: "blue",
         });
-        fetchPartType();
+        fetchCarBrand();
       } else {
         showNotification({
           title: "เกิดข้อผิดพลาดในการลบประเภทอ่ะไหล่รถยนต์",
@@ -143,17 +144,17 @@ const PartTypeTable = () => {
     }
   }
 
-  const rows = filteredParts?.map((PartType: PartType, index: number) => (
-    <Table.Tr key={PartType._id}>
+  const rows = filteredParts?.map((CarBrand: CarBrand, index: number) => (
+    <Table.Tr key={CarBrand._id}>
       <Table.Td ta="center">{index + 1}</Table.Td>
-      <Table.Td ta="center">{PartType.name}</Table.Td>
+      <Table.Td ta="center">{CarBrand.name}</Table.Td>
       <Table.Td ta="center">
         <Group gap={"xs"}>
           <Tooltip label="แก้ไข">
             <ActionIcon
               variant="filled"
               color="yellow.8"
-              onClick={() => OpenEdit(PartType)}
+              onClick={() => OpenEdit(CarBrand)}
             >
               <IconEdit />
             </ActionIcon>
@@ -163,7 +164,7 @@ const PartTypeTable = () => {
             <ActionIcon
               variant="filled"
               color="red.8"
-              onClick={() => openDeleteModal(PartType._id, PartType.name)}
+              onClick={() => openDeleteModal(CarBrand._id, CarBrand.name)}
             >
               <IconTrash />
             </ActionIcon>
@@ -177,9 +178,9 @@ const PartTypeTable = () => {
     <Stack align="stretch" justify="center" gap="md">
       <Group justify="space-between">
         <Group align="center" gap={5}>
-          <IconArticleFilled size={30} />
+          <IconBrandToyota size={30} />
           <Text size="xl" fw={700}>
-            ประเภทอ่ะไหล่
+            ยี่ห้อรถยนต์
           </Text>
         </Group>
         <Group gap={"xs"}>
@@ -188,14 +189,14 @@ const PartTypeTable = () => {
               variant="filled"
               color="blue"
               onClick={() => {
-                fetchPartType();
+                fetchCarBrand();
               }}
               size="lg"
             >
               <IconRefresh />
             </ActionIcon>
           </Tooltip>
-          <Tooltip label="เพิ่มรายการอะไหล่">
+          <Tooltip label="เพิ่มยี่ห้อรถยนต์">
             <Button
               variant="filled"
               color="green"
@@ -203,7 +204,7 @@ const PartTypeTable = () => {
               leftSection={<IconPlus size={20} stroke={2.5} />}
               onClick={() => OpenAdd()}
             >
-              เพิ่มประเภทอ่ะไหล่
+              เพิ่มยี่ห้อรถยนต์
             </Button>
           </Tooltip>
         </Group>
@@ -231,7 +232,7 @@ const PartTypeTable = () => {
           <Table.Thead>
             <Table.Tr>
               <Table.Th ta="center">ลำดับ</Table.Th>
-              <Table.Th ta="center">ชื่อประเภท</Table.Th>
+              <Table.Th ta="center">ชื่อยี่ห้อรถยนต์</Table.Th>
 
               <Table.Th ta="center"> </Table.Th>
             </Table.Tr>
@@ -240,12 +241,12 @@ const PartTypeTable = () => {
         </Table>
       </Paper>
 
-      <AddTypePartModal
+      {/* <AddTypePartModal
         opened={Addopened}
         onClose={closeAdd}
         title={<Text fw={900}> เพิ่มประเภทอะไหล่ </Text>}
         typeName={TypeName}
-        fetchPartType={fetchPartType}
+        fetchCarBrand={fetchCarBrand}
       />
 
       <EditTypePartModal
@@ -253,11 +254,11 @@ const PartTypeTable = () => {
         onClose={closeEdit}
         title={<Text fw={900}> เพิ่มประเภทอะไหล่ </Text>}
         typeName={TypeName}
-        TypePart={editPartType}
-        fetchPartType={fetchPartType}
-      />
+        TypePart={editCarBrand}
+        fetchCarBrand={fetchCarBrand}
+      /> */}
     </Stack>
   );
 };
 
-export default PartTypeTable;
+export default BrandTable;

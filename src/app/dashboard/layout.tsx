@@ -19,6 +19,7 @@ import {
   IconUser,
   IconHistory,
   IconArticleFilled,
+  IconBrandToyota,
 } from "@tabler/icons-react";
 import classes from "@css/nav.module.css";
 import { usePathname, useRouter } from "next/navigation";
@@ -52,8 +53,13 @@ export default function DashboardLayout({
       icon: IconArticleFilled,
     },
     {
-      link: "/dashboard/car",
-      label: "รายการรถยนต์",
+      link : "/dashboard/carbrand",
+      label: "ยี่ห้อรถยนต์",
+      icon : IconBrandToyota
+    },
+    {
+      link: "/dashboard/carmodel",
+      label: "รุ่นรถยนต์",
       icon: IconCar,
     },
 

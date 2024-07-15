@@ -29,6 +29,7 @@ interface ModalProps {
   title: React.ReactNode;
   typeName:  string[] | undefined;
   TypePart : PartType;
+  fetchPartType : () => void;
 }
 
 
@@ -38,8 +39,10 @@ const EditTypePartModal: React.FC<ModalProps> = ({
   title,
   typeName,
     TypePart,
+    fetchPartType
 }) => {
   const TypeName = typeName || [];
+  console.log("TypePart", TypePart);
 
   const schema = z.object({
     name: z
@@ -68,7 +71,7 @@ const EditTypePartModal: React.FC<ModalProps> = ({
   }, [TypePart]);
 
 
-  const handlesubmit = async (data: any) => {
+  const handlesubmit = async (data: any , typePartId : any) => {
     try {
       if (TypeName.includes(data.name)) {
         showNotification({
@@ -80,24 +83,37 @@ const EditTypePartModal: React.FC<ModalProps> = ({
         return;
       }
 
-      const collectionRef = collection(db, "typeofparts");
-      const docRef = doc(collectionRef, TypePart.id);
-      await updateDoc(docRef, {
-        name: data.name,
-        timestamp: serverTimestamp(),
+      const res = await fetch(`/api/typeofparts/${typePartId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: data.name,
+        }),
       });
-      showNotification({
-        title: "เพิ่มประเภทอ่ะไหล่สำเร็จ",
-        message: "เพิ่มประเภท " + data.name + " สำเร็จ",
-        color: "blue",
-        icon: null,
-      });
-      form.reset();
+      if (res.ok) {
+        showNotification({
+          title: "แก้ไขประเภทอ่ะไหล่สำเร็จ",
+          message: "แก้ไขประเภท " + data.name + " สำเร็จ",
+          color: "green",
+          icon: null,
+        });
+        fetchPartType();
+        form.reset();
+      } else {
+        showNotification({
+          title: "แก้ไขประเภทอ่ะไหล่สำเร็จ",
+          message: "เกิดข้อผิดพลาดระหว่างแก้ไขประเภทอ่ะไหล่",
+          color: "red",
+          icon: null,
+        });
+      }
     } catch (error) {
   
       showNotification({
-        title: "เพิ่มประเภทอ่ะไหล่สำเร็จ",
-        message: "เกิดข้อผิดพลาดระหว่างเพิ่มประเภทอ่ะไหล่",
+        title: "แก้ไขประเภทอ่ะไหล่สำเร็จ",
+        message: "เกิดข้อผิดพลาดระหว่างแก้ไขประเภทอ่ะไหล่",
         color: "red",
         icon: null,
       });
@@ -110,7 +126,7 @@ const EditTypePartModal: React.FC<ModalProps> = ({
         onSubmit={(event) => {
           event.preventDefault();
           form.onSubmit((data) => {
-            handlesubmit(data);
+            handlesubmit(data , TypePart._id);
             form.reset();
             onClose();
           })();
