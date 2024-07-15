@@ -24,6 +24,7 @@ import {
 import classes from "@css/nav.module.css";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { showNotification } from "@mantine/notifications";
 
 export default function DashboardLayout({
   children,
@@ -76,6 +77,14 @@ export default function DashboardLayout({
   };
 
   const pathname = usePathname();
+  const LogOut = () => {
+    signOut();
+    showNotification({
+      title: "ออกจากระบบ",
+      message: "ออกจากระบบแล้ว",
+      color: "blue",
+    });
+  }
 
   if (status === "authenticated") {
     const thisUser = session?.user as {
