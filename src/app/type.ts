@@ -16,7 +16,7 @@ export type Car = {
 
 export type CarBrand = {
   _id: string;
-  name: string;
+  brand: string;
 };
 
 export type Part = {

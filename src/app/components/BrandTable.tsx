@@ -31,15 +31,15 @@ import {
 
 import { useDisclosure } from "@mantine/hooks";
 
-import AddTypePartModal from "@components/TypePartModal/Addtype";
-import EditTypePartModal from "@components/TypePartModal/EditType";
+import AddBrandCarModal from "./BrandCarModal/AddBrandCar";
+import EditBrandCarModal from "./BrandCarModal/EditBrandCar";
 import { modals } from "@mantine/modals";
 import { showNotification } from "@mantine/notifications";
 import { CarBrand } from "@/app/type";
 
 const BrandTable = () => {
   const [CarBrand, setCarBrand] = useState([] as any[] | undefined);
-  const [TypeName, setTypeName] = useState([] as any[] | undefined);
+  const [BrandName, setBrandName] = useState([] as any[] | undefined);
 
   const [search, setSearch] = useState("");
   const [editCarBrand, setEditCarBrand] = useState({} as CarBrand);
@@ -49,16 +49,16 @@ const BrandTable = () => {
     useDisclosure(false);
 
   const fetchCarBrand = async () => {
-    const res = await fetch("http://localhost:3000/api/typeofparts", {
+    const res = await fetch("/api/brandcar", {
       method: "GET",
       headers: {
-        "Content-Type" : "application/json",
+        "Content-Type": "application/json",
       },
     });
     if (!res.ok) {
       showNotification({
-        title: "เกิดข้อผิดพลาดในการดึงข้อมูลประเภทอ่ะไหล่",
-        message: "เกิดข้อผิดพลาดในการดึงข้อมูลประเภทอ่ะไหล่",
+        title: "เกิดข้อผิดพลาดในการดึงข้อมูลยี่ห้อรถยนต์",
+        message: "เกิดข้อผิดพลาดในการดึงข้อมูลยี่ห้อรถยนต์",
         color: "red",
       });
       return;
@@ -77,29 +77,29 @@ const BrandTable = () => {
   };
 
   const filteredParts = CarBrand?.filter((CarBrand: CarBrand) => {
-    const searchFields = Object.values(CarBrand).join("").toLowerCase();
-
-    return searchFields.includes(search.toLowerCase());
+    return CarBrand.brand.toLowerCase().includes(search.toLowerCase());
   });
 
   function OpenEdit(CarBrandIN: CarBrand) {
     setEditCarBrand(CarBrandIN);
-    setTypeName(CarBrand?.map((CarBrand: CarBrand) => CarBrand.name) || []);
+    setBrandName(CarBrand?.map((CarBrand: CarBrand) => CarBrand.brand) || []);
     openEdit();
   }
 
   function OpenAdd() {
-    setTypeName(CarBrand?.map((CarBrand: CarBrand) => CarBrand.name) || []);
+    setBrandName(CarBrand?.map((CarBrand: CarBrand) => CarBrand.brand) || []);
     openAdd();
   }
 
   const openDeleteModal = (CarBrandId: any, Partname: any) => {
     modals.openConfirmModal({
-      title: <Text fw={900}> ลบประเภทอ่ะไหล่ </Text>,
+      title: <Text fw={900}> 
+        ลบยี่ห้อรถยนต์
+       </Text>,
       centered: true,
       children: (
         <Text size="sm">
-          ต้องการลบประเภท <strong> {Partname}</strong> ใช่หรือไม่
+          ต้องการลบ <strong> {Partname}</strong> ใช่หรือไม่
         </Text>
       ),
       labels: { confirm: "ยืนยัน", cancel: "ยกเลิก" },
@@ -113,7 +113,7 @@ const BrandTable = () => {
   };
   async function removePart(CarBrandId: any, CarBrandname: any) {
     try {
-      const res = await fetch(`/api/typeofparts/${CarBrandId}`, {
+      const res = await fetch(`/api/brandcar/${CarBrandId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -147,7 +147,7 @@ const BrandTable = () => {
   const rows = filteredParts?.map((CarBrand: CarBrand, index: number) => (
     <Table.Tr key={CarBrand._id}>
       <Table.Td ta="center">{index + 1}</Table.Td>
-      <Table.Td ta="center">{CarBrand.name}</Table.Td>
+      <Table.Td ta="center">{CarBrand.brand}</Table.Td>
       <Table.Td ta="center">
         <Group gap={"xs"}>
           <Tooltip label="แก้ไข">
@@ -164,7 +164,7 @@ const BrandTable = () => {
             <ActionIcon
               variant="filled"
               color="red.8"
-              onClick={() => openDeleteModal(CarBrand._id, CarBrand.name)}
+              onClick={() => openDeleteModal(CarBrand._id, CarBrand.brand)}
             >
               <IconTrash />
             </ActionIcon>
@@ -241,22 +241,22 @@ const BrandTable = () => {
         </Table>
       </Paper>
 
-      {/* <AddTypePartModal
+      <AddBrandCarModal
         opened={Addopened}
         onClose={closeAdd}
-        title={<Text fw={900}> เพิ่มประเภทอะไหล่ </Text>}
-        typeName={TypeName}
+        title={<Text fw={900}>เพิ่มยี่ห้อรถยนต์</Text>}
+        BrandCarName={BrandName}
         fetchCarBrand={fetchCarBrand}
       />
-
-      <EditTypePartModal
+   
+      <EditBrandCarModal
         opened={Editopened}
         onClose={closeEdit}
         title={<Text fw={900}> เพิ่มประเภทอะไหล่ </Text>}
-        typeName={TypeName}
-        TypePart={editCarBrand}
+        BrandCarName={BrandName}
+        BrandCar={editCarBrand}
         fetchCarBrand={fetchCarBrand}
-      /> */}
+      /> 
     </Stack>
   );
 };

@@ -1,8 +1,5 @@
 "use client";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { auth, db } from "@/app/firebase/firebase";
+
 
 import {
   Box,
@@ -47,7 +44,6 @@ const AddUserModal: React.FC<ModalProps> = ({
   fetchUser,
 }) => {
   const NameUsers = Nameusers || [];
-  const router = useRouter();
   const schema = z.object({
     username: z.string()
     .nonempty({ message: "กรุณากรอกชื่อผู้ใช้งาน" })
@@ -165,7 +161,7 @@ const AddUserModal: React.FC<ModalProps> = ({
           form.onSubmit((data) => {
             handlesubmit(data);
             form.reset();
-            router.refresh();
+        
           })();
         }}
       >

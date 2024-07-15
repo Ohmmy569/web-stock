@@ -1,6 +1,4 @@
 "use client";
-import { db } from "@/app/firebase/firebase";
-
 import {
   Box,
   Button,
@@ -12,13 +10,6 @@ import {
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
-import {
-  addDoc,
-  serverTimestamp,
-  collection,
-  updateDoc,
-  doc,
-} from "firebase/firestore";
 
 import { PartType } from "@/app/type";
 import { useEffect } from "react";

@@ -20,6 +20,8 @@ import {
   IconSearch,
   IconCarCrash,
   IconCar,
+  IconRefresh,
+  IconPlus,
 } from "@tabler/icons-react";
 
 import { Car } from "../type";
@@ -36,6 +38,20 @@ const CarTable = () => {
 
   const [brand, setBrand] = useState("all");
 
+  const fetchCar = async () => {
+    const res = await fetch("/api/cars", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (!res.ok) {
+      console.log("error");
+    } else {
+      const data = await res.json();
+      setCars(data);
+    }
+  }
 
   useEffect(() => {
     setCars(car);
@@ -80,7 +96,31 @@ const CarTable = () => {
             รายการรถยนต์
           </Text>
         </Group>
-    
+        <Group gap={"xs"}>
+          <Tooltip label="รีเฟรชข้อมูล">
+            <ActionIcon
+              variant="filled"
+              color="blue"
+              onClick={() => {
+                fetchCar();
+              }}
+              size="lg"
+            >
+              <IconRefresh />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label="เพิ่มรายการอะไหล่">
+            <Button
+              variant="filled"
+              color="green"
+              radius="md"
+              leftSection={<IconPlus size={20} stroke={2.5} />}
+              onClick={() => {}}
+            >
+              เพิ่มรถยนต์
+            </Button>
+          </Tooltip>
+        </Group>
       </Group>
 
       <Group mt={-10} grow>

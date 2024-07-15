@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectMongoDB } from "@lib/connectDB";
-import TypePart from "@lib/models/typeofparts";
+import Brandcar from "@lib/models/brandcar";
 
 export async function GET() {
   try {
     await connectMongoDB();
-    const typePart = await TypePart.find();
-    return NextResponse.json(typePart);
+    const brandcar = await Brandcar.find();
+    return NextResponse.json(brandcar);
+    // await Brandcar.create({
+    //     brand: "Toyota",
+    // });
+    // await Brandcar.create({
+    //     brand: "Honda",
+    // });
+    return NextResponse.json({ message: "brand created." }, { status: 201 });
   } catch (error) {
     return NextResponse.json(
-      { message: "An error occured while fetching TypeOfParts." },
+      { message: "An error occured while fetching brandcar." },
       { status: 500 }
     );
   }
@@ -17,18 +24,16 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { name } = await req.json();
-
+    const { brand } = await req.json();
     await connectMongoDB();
-
-    await TypePart.create({
-      name,
+    await Brandcar.create({
+        brand,
     });
 
-    return NextResponse.json({ message: "TypeOfPart created." }, { status: 201 });
+    return NextResponse.json({ message: "brand created." }, { status: 201 });
   } catch (error) {
     return NextResponse.json(
-      { message: "An error occured while creating part.", error },
+      { message: "An error occured while creating brand.", error },
       { status: 500 }
     );
   }

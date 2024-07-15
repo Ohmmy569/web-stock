@@ -9,23 +9,23 @@ interface ModalProps {
   opened: boolean;
   onClose: () => void;
   title: React.ReactNode;
-  typeName: string[] | undefined;
-  fetchPartType: () => void;
+  BrandCarName: string[] | undefined;
+  fetchCarBrand: () => void;
 }
 
-const AddTypePartModal: React.FC<ModalProps> = ({
+const AddBrandCarModal: React.FC<ModalProps> = ({
   opened,
   onClose,
   title,
-  typeName,
-  fetchPartType,
+  BrandCarName,
+  fetchCarBrand,
 }) => {
-  const TypeName = typeName || [];
+  const TypeName = BrandCarName || [];
 
   const schema = z.object({
     name: z
       .string()
-      .nonempty({ message: "กรุณากรอกชื่อประเภท" })
+      .nonempty({ message: "กรุณากรอกยี่ห้อรถยนต์" })
       .refine(
         (value) => {
           if (TypeName.includes(value)) {
@@ -33,7 +33,7 @@ const AddTypePartModal: React.FC<ModalProps> = ({
           }
           return true; // Valid if the name doesn't exist in Partname
         },
-        { message: "ชื่อประเภทซ้ำ" }
+        { message: "ยี่ห้อรถยนต์ซ้ำ" }
       ),
   });
 
@@ -48,44 +48,44 @@ const AddTypePartModal: React.FC<ModalProps> = ({
     try {
       if (TypeName.includes(data.name)) {
         showNotification({
-          title: "ชื่อประเภทซ้ำ",
-          message: "กรุณากรอกชื่อประเภทใหม่",
+          title: "ยี่ห้อรถยนต์ซ้ำ",
+          message: "กรุณากรอกยี่ห้อรถยนต์ใหม่",
           color: "red",
           icon: null,
         });
         return;
       }
 
-      const resType = await fetch("/api/typeofparts", {
+      const resType = await fetch("/api/brandcar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: data.name,
+          brand: data.name,
         }),
       });
       if (resType.ok) {
         showNotification({
-          title: "เพิ่มประเภทอ่ะไหล่สำเร็จ",
-          message: "เพิ่มประเภท " + data.name + " สำเร็จ",
-          color: "green",
-          icon: null,
+            title: "เพิ่มยี่ห้อรถยนต์สำเร็จ",
+            message: "เพิ่มยี่ห้อรถยนต์สำเร็จ",
+            color: "green",
+            icon: null,
         });
         form.reset();
-        fetchPartType();
+        fetchCarBrand();
       } else {
         showNotification({
-          title: "เพิ่มประเภทอ่ะไม่ไหล่สำเร็จ",
-          message: "เกิดข้อผิดพลาดระหว่างเพิ่มประเภทอ่ะไหล่",
-          color: "red",
-          icon: null,
+            title: "เพิ่มยี่ห้อรถยนต์ไม่สำเร็จ",
+            message: "เกิดข้อผิดพลาดระหว่างเพิ่มยี่ห้อรถยนต์",
+            color: "red",
+            icon: null,
         });
       }
     } catch (error) {
       showNotification({
-        title: "เพิ่มประเภทอ่ะไหล่สำเร็จ",
-        message: "เกิดข้อผิดพลาดระหว่างเพิ่มประเภทอ่ะไหล่",
+        title: "เพิ่มยี่ห้อรถยนต์ไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดระหว่างเพิ่มยี่ห้อรถยนต์",
         color: "red",
         icon: null,
       });
@@ -106,8 +106,8 @@ const AddTypePartModal: React.FC<ModalProps> = ({
       >
         <Box>
           <TextInput
-            label="ชื่อประเภทอ่ะไหล่"
-            placeholder="กรอกประเภทอ่ะไหล่"
+            label="ยี่ห้อรถยนต์"
+            placeholder="กรอกยี่ห้อรถยนต์"
             mb={"xs"}
             {...form.getInputProps("name")}
           />
@@ -127,4 +127,4 @@ const AddTypePartModal: React.FC<ModalProps> = ({
   );
 };
 
-export default AddTypePartModal;
+export default AddBrandCarModal;

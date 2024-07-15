@@ -3,7 +3,6 @@ import React, { use, useEffect } from "react";
 import { useForm } from "@mantine/form";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { signIn, signOut } from "next-auth/react";
-import { auth } from "@/app/firebase/firebase";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import {

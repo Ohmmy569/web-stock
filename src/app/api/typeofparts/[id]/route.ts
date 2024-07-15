@@ -26,9 +26,7 @@ export async function PUT(
   try {
     const { id } = params;
     const { name } = await req.json();
-    console.log("name : ", name
-    )
-    console.log("id : ", id)
+
     await connectMongoDB();
     const typePart = await TypePart.findByIdAndUpdate(id, {
       name,

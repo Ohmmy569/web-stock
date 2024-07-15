@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectMongoDB } from "@lib/connectDB";
-import TypePart from "@lib/models/typeofparts";
+import Brandcar from "@lib/models/brandcar";
 
 export async function DELETE(
   req: NextRequest,
@@ -9,11 +9,11 @@ export async function DELETE(
   try {
     const { id } = params;
     await connectMongoDB();
-    const typePart = await TypePart.deleteOne({ _id: id });
-    return NextResponse.json(typePart);
+    const brandcar = await Brandcar.deleteOne({ _id: id });
+    return NextResponse.json(brandcar);
   } catch (error) {
     return NextResponse.json(
-      { message: "An error occured while deleting TypeOfPart" },
+      { message: "An error occured while deleting brandcar" },
       { status: 500 }
     );
   }
@@ -25,18 +25,16 @@ export async function PUT(
 ) {
   try {
     const { id } = params;
-    const { name } = await req.json();
-    console.log("name : ", name
-    )
-    console.log("id : ", id)
+    const { brand } = await req.json();
+
     await connectMongoDB();
-    const typePart = await TypePart.findByIdAndUpdate(id, {
-      name,
+    const brandcar = await Brandcar.findByIdAndUpdate(id, {
+        brand,
     });
-    return NextResponse.json(typePart);
+    return NextResponse.json(brandcar);
   } catch (error) {
     return NextResponse.json(
-      { message: "An error occured while updating the TypeOfPart." },
+      { message: "An error occured while updating the brandcar." },
       { status: 500 }
     );
   }
