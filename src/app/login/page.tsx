@@ -59,7 +59,7 @@ export default function Page() {
       const res = await signIn("credentials", {
         email,
         password,
-        redirect: false,
+      
       });
       if (res?.error) {
         showNotification({

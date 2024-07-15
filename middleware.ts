@@ -38,5 +38,5 @@ export async function middleware(req: NextRequest) {
 
 // Apply the middleware to relevant routes
 export const config = {
-  matcher: ["/dashboard/:path*", "/" , "/api/register" , "/api/checkUser" , "/api/users/:id*" , "/api/users"],
+  matcher: ["/dashboard/parts", "/" , "/api/register" , "/api/checkUser" , "/api/users"],
 };
