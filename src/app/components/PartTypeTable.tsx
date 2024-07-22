@@ -39,7 +39,7 @@ const PartTypeTable = () => {
     useDisclosure(false);
 
   const fetchPartType = async () => {
-    const res = await fetch("http://localhost:3000/api/typeofparts", {
+    const res = await fetch("/api/typeofparts", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -68,7 +68,7 @@ const PartTypeTable = () => {
 
   const filteredParts = PartType?.filter((PartType: PartType) => {
     const searchFields = Object.values(PartType).join("").toLowerCase();
-    
+
 
     return searchFields.includes(search.toLowerCase());
   });
