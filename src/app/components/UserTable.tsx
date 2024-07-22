@@ -43,7 +43,7 @@ const UserTable = () => {
 
   const fetchUser = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/users", {
+      const res = await fetch("/api/users", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -136,7 +136,7 @@ const UserTable = () => {
 
   async function removeUser(UserId: any , Username : any ) {
     try {
-      await fetch(`http://localhost:3000/api/users/${UserId}`, {
+      await fetch(`/api/users/${UserId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

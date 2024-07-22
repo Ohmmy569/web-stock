@@ -25,7 +25,6 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const { brand , model} = await req.json();
-    console.log(brand , model);
     await connectMongoDB();
     await Modelcar.create({
         name : model,
