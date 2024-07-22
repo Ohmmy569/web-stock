@@ -41,7 +41,8 @@ function removeDuplicates(arr: any[]) {
 
 const PartTable = () => {
   const [Parts, setParts] = useState([] as any[] | undefined);
-  const [Cars, setCars] = useState(car as Car[] | undefined);
+  const [Cars, setCars] = useState([] as Car[] | undefined);
+  const [CarBrand, setCarBrand] = useState([] as any[] | undefined);
   const [PartCode, setPartCode] = useState([] as any[] | undefined);
   const [TypeofParts, setTypeofParts] = useState([] as any[] | undefined);
   const [search, setSearch] = useState("");
@@ -89,6 +90,38 @@ const PartTable = () => {
         },
       });
 
+      const resBrand = await fetch("/api/brandcar", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const resCar = await fetch("/api/modelcar", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!resCar.ok) {
+        showNotification({
+          title: "เกิดข้อผิดพลาดในการดึงข้อมูลรุ่นรถยนต์",
+          message: "เกิดข้อผิดพลาดในการดึงข้อมูลรุ่นรถยนต์",
+          color: "red",
+        });
+        return;
+      }
+
+      if (!resBrand.ok) {
+        showNotification({
+          title: "เกิดข้อผิดพลาดในการดึงข้อมูลยี่ห้อรถยนต์",
+          message: "เกิดข้อผิดพลาดในการดึงข้อมูลยี่ห้อรถยนต์",
+          color: "red",
+        });
+        return;
+      }
+
       if (!resPart.ok) {
         showNotification({
           title: "เกิดข้อผิดพลาดในการดึงข้อมูลอ่ะไหล่รถยนต์",
@@ -108,9 +141,14 @@ const PartTable = () => {
 
       const dataPart = (await resPart.json()) as Part[];
       const dataType = (await resType.json()) as any[];
+      const dataBrand = (await resBrand.json()) as any[];
+      const dataCar = (await resCar.json()) as Car[];
 
       setParts(dataPart);
       setTypeofParts(dataType);
+      setCarBrand(dataBrand);
+      setCars(dataCar);
+      
     } catch (error: any) {
       showNotification({
         title: "เกิดข้อผิดพลาดในการดึงข้อมูลอ่ะไหล่รถยนต์",
@@ -124,10 +162,9 @@ const PartTable = () => {
     fetchPart();
   }, []);
 
-  const ModalCars = Cars;
-  const ModalcarBrand = removeDuplicates(
-    Cars?.map((Car: Car) => Car.brand) as string[]
-  );
+  const ModalCars = Cars
+  
+  const ModalcarBrand = CarBrand?.map((Brand: any) => Brand.brand) as string[];
   const modalPartName = Parts?.map((Part: Part) => Part.name) as string[];
   const ModalTypeofParts = TypeofParts?.map(
     (TypeofPart: any) => TypeofPart.name

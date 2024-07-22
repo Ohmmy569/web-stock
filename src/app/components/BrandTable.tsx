@@ -82,7 +82,7 @@ const BrandTable = () => {
 
   function OpenEdit(CarBrandIN: CarBrand) {
     setEditCarBrand(CarBrandIN);
-    setBrandName(CarBrand?.map((CarBrand: CarBrand) => CarBrand.brand) || []);
+    setBrandName(CarBrand?.filter((name) => name !== CarBrandIN.brand));
     openEdit();
   }
 
@@ -111,6 +111,7 @@ const BrandTable = () => {
       },
     });
   };
+
   async function removePart(CarBrandId: any, CarBrandname: any) {
     try {
       const res = await fetch(`/api/brandcar/${CarBrandId}`, {
@@ -123,21 +124,21 @@ const BrandTable = () => {
 
       if (res.ok) {
         showNotification({
-          title: "ลบประเภทอ่ะไหล่สำเร็จ",
-          message: "ลบประเภท " + CarBrandname + " สำเร็จ",
+          title: "ลบยี่ห้อรถยนต์",
+          message: "ลบยี่ห้อ " + CarBrandname + " สำเร็จ",
           color: "blue",
         });
         fetchCarBrand();
       } else {
         showNotification({
-          title: "เกิดข้อผิดพลาดในการลบประเภทอ่ะไหล่รถยนต์",
-          message: "เกิดข้อผิดพลาดในการลบประเภทอ่ะไหล่รถยนต์",
+          title: "เกิดข้อผิดพลาดในการลบยี่ห้อรถยนต์",
+          message: "เกิดข้อผิดพลาดในการลบยี่ห้อรถยนต์",
           color: "red",
         });
       }
     } catch (error: any) {
       showNotification({
-        title: "เกิดข้อผิดพลาดในการลบประเภทอ่ะไหล่รถยนต์",
+        title: "เกิดข้อผิดพลาดในการลบยี่ห้อรถยนต์",
         message: error.message,
         color: "red",
       });

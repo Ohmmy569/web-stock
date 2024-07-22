@@ -11,7 +11,7 @@ export type User = {
 export type Car = {
   _id: string;
   brand: string;
-  model: string;
+  name: string;
 };
 
 export type CarBrand = {

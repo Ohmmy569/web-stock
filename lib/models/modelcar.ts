@@ -15,5 +15,5 @@ const modelcar = new Schema(
     { timestamps: true }
 )
 
-const Modelcar = mongoose.models.Modelcar || mongoose.model("Brandcar", modelcar);
+const Modelcar = mongoose.models.Modelcar || mongoose.model("Modelcar", modelcar);
 export default Modelcar;
