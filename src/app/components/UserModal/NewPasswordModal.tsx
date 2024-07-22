@@ -6,24 +6,11 @@ import {
   Group,
   Modal,
   PasswordInput,
-  Select,
-  Text,
-  TextInput,
 } from "@mantine/core";
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
-import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  serverTimestamp,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
+
 import { User } from "@/app/type";
 
 interface ModalProps {

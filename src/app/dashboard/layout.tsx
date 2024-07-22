@@ -1,6 +1,5 @@
-
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   AppShell,
   Burger,
@@ -21,7 +20,6 @@ import {
   IconArticleFilled,
   IconBrandToyota,
 } from "@tabler/icons-react";
-import classes from "@css/nav.module.css";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { showNotification } from "@mantine/notifications";
@@ -171,7 +169,7 @@ export default function DashboardLayout({
                   c={"myblue"}
                   fw={900}
                   p={10}
-                  className={classes.navlink}
+               
                 />
                 <NavLink
                   label={<strong>ออกจากระบบ</strong>}

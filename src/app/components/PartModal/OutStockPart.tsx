@@ -45,22 +45,6 @@ const OutStockPartModal: React.FC<ModalProps> = ({
     PartId: any
   ) => {
     try {
-      // const collectionRef = collection(db, "parts");
-      // const docRef = doc(collectionRef, Part.id);
-      // await updateDoc(docRef, {
-      //   amount: current - data.amount,
-      // });
-      // await Addhistory(
-      //   username,
-      //   Part.code,
-      //   Part.type,
-      //   Part.name,
-      //   data.amount,
-      //   Part.brand,
-      //   Part.costPrice,
-      //   Part.salePrice,
-      //   "เบิกสินค้า"
-      // );
       const resRe = await fetch(
         `http://localhost:3000/api/outstock/${PartId}`,
         {

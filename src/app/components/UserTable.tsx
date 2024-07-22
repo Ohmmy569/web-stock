@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   ActionIcon,
   Button,
-  Card,
   Group,
-  Modal,
   Paper,
   Stack,
   Table,
@@ -28,7 +26,6 @@ import EditUserModal from "@components/UserModal/EditUserModal";
 import NewPassModal from "@components/UserModal/NewPasswordModal";
 import { modals } from "@mantine/modals";
 import { showNotification } from "@mantine/notifications";
-import { useRouter } from "next/navigation";
 
 const UserTable = () => {
   const [users, setUsers] = useState([] as any[] | undefined);
@@ -39,7 +36,6 @@ const UserTable = () => {
   const [Editopened, { open: openEdit, close: closeEdit }] =
     useDisclosure(false);
   const [Passopened, { open: openPass, close: closePass }] = useDisclosure(false);
-  const router = useRouter();
 
 
   const [editNameEmail , setEditNameEmail] = useState([] as string[] | undefined);

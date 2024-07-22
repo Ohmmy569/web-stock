@@ -9,12 +9,8 @@ import {
   Group,
   Modal,
   NumberInput,
-  PasswordInput,
   Select,
-  Text,
   TextInput,
-  Checkbox,
-  CheckboxGroup,
   MultiSelect,
 } from "@mantine/core";
 import { z } from "zod";
@@ -111,7 +107,7 @@ const EditPartModal: React.FC<ModalProps> = ({
     if (selectedBrand) {
       const filteredModels =
         Cars?.filter((car) => car.brand === selectedBrand).map(
-          (car) => car.model
+          (car) => car.name
         ) || [];
       //append value "all" to the beginning of the array
       setCarModel(removeDuplicates(["ใช้ได้ทุกรุ่น", ...filteredModels]));
