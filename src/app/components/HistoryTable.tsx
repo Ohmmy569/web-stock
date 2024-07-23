@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import {
   ActionIcon,
+  Card,
+  Grid,
   Group,
+  Menu,
   Paper,
   Select,
   Stack,
@@ -15,7 +18,8 @@ import { IconSearch, IconHistory, IconRefresh } from "@tabler/icons-react";
 import { PartHistory } from "@/app/type";
 import { showNotification } from "@mantine/notifications";
 
-const PartHistoryTable = () => {
+const PartHistoryTable = (props: any) => {
+  let mobile = props.matches;
   const [History, setHistory] = useState([] as any[] | undefined);
   const [search, setSearch] = useState("");
 
@@ -77,104 +81,245 @@ const PartHistoryTable = () => {
     }
   });
 
-  const rows = filteredHistory?.map((history: PartHistory) => (
+  const rows = filteredHistory?.map((history: PartHistory,index : number) => (
     <Table.Tr key={history._id}>
       <Table.Td ta="center">
-        {" "}
+        {index + 1 + " "}
         {new Date(history.createdAt).toLocaleString()}
       </Table.Td>
       <Table.Td ta="center">{history.user}</Table.Td>
       {history.action == "เบิกสินค้า" ? (
-        <Table.Td ta="center" c={"red"} fw={700}>{history.action}</Table.Td>
+        <Table.Td ta="center" c={"red"} fw={700}>
+          {history.action}
+        </Table.Td>
       ) : (
-        <Table.Td ta="center"  c={"green"} fw={700}>{history.action}</Table.Td>
+        <Table.Td ta="center" c={"green"} fw={700}>
+          {history.action}
+        </Table.Td>
       )}
       <Table.Td ta="center">{history.partCode}</Table.Td>
       <Table.Td ta="center">{history.partName}</Table.Td>
       {history.action == "เบิกสินค้า" ? (
-        <Table.Td ta="center" c={"red"} fw={700}>{history.amount}</Table.Td>
+        <Table.Td ta="center" c={"red"} fw={700}>
+          {history.amount}
+        </Table.Td>
       ) : (
-        <Table.Td ta="center"  c={"green"} fw={700}>{history.amount}</Table.Td>
+        <Table.Td ta="center" c={"green"} fw={700}>
+          {history.amount}
+        </Table.Td>
       )}
     </Table.Tr>
   ));
 
+  const mobileRows = filteredHistory?.map((history: PartHistory) => (
+    <Card withBorder padding="xs" key={history._id}>
+      <Grid justify="center" align="center" gutter="4" columns={4} grow>
+        <Grid.Col span={4}>
+          <Text fw={700} size="md">
+            {history.partName}
+          </Text>
+        </Grid.Col>
+
+        <Grid.Col span={4}>
+          <Group justify="space-between">
+            <Text size="sm">
+              <b>เวลา/วันที่ : </b>
+              {new Date(history.createdAt).toLocaleString()}
+            </Text>
+          </Group>
+        </Grid.Col>
+        <Grid.Col span={2}>
+          <Text size="sm">
+            <b>รหัส : </b>
+            {history.partCode}
+          </Text>
+        </Grid.Col>
+        <Grid.Col span={2}>
+          <Text size="sm">
+            <b>ผู้ใช้ : </b>
+            {history.user}
+          </Text>
+        </Grid.Col>
+        <Grid.Col span={2}>
+          <Text size="sm">
+            {history.action == "เบิกสินค้า" ? (
+              <Text c={"red"} fw={700}>
+                {history.action}
+              </Text>
+            ) : (
+              <Text c={"green"} fw={700}>
+                {history.action}
+              </Text>
+            )}
+          </Text>
+        </Grid.Col>
+        <Grid.Col span={2}>
+          <Text size="sm">
+            {history.action == "เบิกสินค้า" ? (
+              <Text c={"red"} fw={700}>
+                <b>จำนวน : </b>
+                {history.amount}
+              </Text>
+            ) : (
+              <Text c={"green"} fw={700}>
+                <b>จำนวน : </b>
+                {history.amount}
+              </Text>
+            )}
+          </Text>
+        </Grid.Col>
+      </Grid>
+    </Card>
+  ));
+
   return (
     <Stack align="stretch" justify="center" gap="md">
-      <Group justify="space-between">
-        <Group align="center" gap={5}>
-          <IconHistory size={30} />
-          <Text size="xl" fw={700}>
-            ประวัติการเบิก - เติมอะไหล่
-          </Text>
-        </Group>
-        <Tooltip label="รีเฟรชข้อมูล">
-          <ActionIcon
-            variant="filled"
-            color="blue"
-            onClick={() => {
-              fetchHistory();
-            }}
-            size="lg"
-          >
-            <IconRefresh />
-          </ActionIcon>
-        </Tooltip>
-      </Group>
+      {mobile ? (
+        <>
+          <Group justify="space-between">
+            <Group align="center" gap={5}>
+              <IconHistory size={30} />
+              <Text size="xl" fw={700}>
+                ประวัติการเบิก - เติมอะไหล่
+              </Text>
+            </Group>
+            <Tooltip label="รีเฟรชข้อมูล">
+              <ActionIcon
+                variant="filled"
+                color="blue"
+                onClick={() => {
+                  fetchHistory();
+                }}
+                size="lg"
+              >
+                <IconRefresh />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
 
-      <Group mt={-10} grow>
-        <TextInput
-          label="ค้นหาทุกข้อมูล"
-          placeholder="ค้นหาทุกข้อมูล"
-          leftSection={
-            <IconSearch
-              style={{ width: "1rem", height: "1rem" }}
-              stroke={1.5}
+          <Group mt={-10} grow>
+            <TextInput
+              label="ค้นหาทุกข้อมูล"
+              placeholder="ค้นหาทุกข้อมูล"
+              leftSection={
+                <IconSearch
+                  style={{ width: "1rem", height: "1rem" }}
+                  stroke={1.5}
+                />
+              }
+              value={search}
+              onChange={handleSearchChange}
             />
-          }
-          value={search}
-          onChange={handleSearchChange}
-        />
-        <Select
-          placeholder="เลือกการกระทำ"
-          data={[
-            { label: "ทั้งหมด", value: "all" },
-            { label: "เติมสินค้า", value: "เติมสินค้า" },
-            { label: "เบิกสินค้า", value: "เบิกสินค้า" },
-          ]}
-          label="เลือกการกระทำ"
-          defaultValue={"all"}
-          onChange={(value) => setAction(value as string)}
-          searchable
-        />
-        <Select
-          placeholder="เลือกเรียงตามวันที่ / เวลา"
-          data={[
-            { label: "ใหม่ไปเก่า", value: "desc" },
-            { label: "เก่าไปใหม่", value: "asc" },
-          ]}
-          label="เลือกเรียงตามวันที่ / เวลา"
-          defaultValue={"asc"}
-          onChange={(value) => setSortbyDate(value as string)}
-        />
-        <Text>&nbsp;</Text>
-      </Group>
+            <Select
+              placeholder="เลือกการกระทำ"
+              data={[
+                { label: "ทั้งหมด", value: "all" },
+                { label: "เติมสินค้า", value: "เติมสินค้า" },
+                { label: "เบิกสินค้า", value: "เบิกสินค้า" },
+              ]}
+              label="เลือกการกระทำ"
+              defaultValue={"all"}
+              onChange={(value) => setAction(value as string)}
+              searchable
+            />
+            <Select
+              placeholder="เลือกเรียงตามวันที่ / เวลา"
+              data={[
+                { label: "ใหม่ไปเก่า", value: "desc" },
+                { label: "เก่าไปใหม่", value: "asc" },
+              ]}
+              label="เลือกเรียงตามวันที่ / เวลา"
+              defaultValue={"asc"}
+              onChange={(value) => setSortbyDate(value as string)}
+            />
+            <Text>&nbsp;</Text>
+          </Group>
 
-      <Paper shadow="sm" radius="md" p={"sm"} withBorder>
-        <Table highlightOnHover stickyHeader striped stickyHeaderOffset={55}>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th ta="center">วันที่ / เวลา</Table.Th>
-              <Table.Th ta="center">ผู้ใช้</Table.Th>
-              <Table.Th ta="center">การกระทำ</Table.Th>
-              <Table.Th ta="center">รหัสอะไหล่</Table.Th>
-              <Table.Th ta="center">ชื่ออะไหล่</Table.Th>
-              <Table.Th ta="center">จำนวน</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{rows}</Table.Tbody>
-        </Table>
-      </Paper>
+          <Paper shadow="sm" radius="md" p={"sm"} withBorder>
+            <Table
+              highlightOnHover
+              stickyHeader
+              striped
+              stickyHeaderOffset={55}
+            >
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th ta="center">วันที่ / เวลา</Table.Th>
+                  <Table.Th ta="center">ผู้ใช้</Table.Th>
+                  <Table.Th ta="center">การกระทำ</Table.Th>
+                  <Table.Th ta="center">รหัสอะไหล่</Table.Th>
+                  <Table.Th ta="center">ชื่ออะไหล่</Table.Th>
+                  <Table.Th ta="center">จำนวน</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{rows}</Table.Tbody>
+            </Table>
+          </Paper>
+        </>
+      ) : (
+        <>
+          <Group justify="space-between">
+            <Group align="center" gap={5}>
+              <IconHistory size={30} />
+              <Text size="lg" fw={700}>
+                ประวัติการเบิก - เติมอะไหล่
+              </Text>
+            </Group>
+            <Tooltip label="รีเฟรชข้อมูล">
+              <ActionIcon
+                variant="filled"
+                color="blue"
+                onClick={() => {
+                  fetchHistory();
+                }}
+                size="1.855rem"
+              >
+                <IconRefresh size={"1.3rem"} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+          <Group mt={-10} grow align="center">
+            <TextInput
+              label="ค้นหาทุกข้อมูล"
+              placeholder="ค้นหาทุกข้อมูล"
+              leftSection={
+                <IconSearch
+                  style={{ width: "1rem", height: "1rem" }}
+                  stroke={1.5}
+                />
+              }
+              value={search}
+              onChange={handleSearchChange}
+            />
+            <Select
+              placeholder="เลือกการกระทำ"
+              data={[
+                { label: "ทั้งหมด", value: "all" },
+                { label: "เติมสินค้า", value: "เติมสินค้า" },
+                { label: "เบิกสินค้า", value: "เบิกสินค้า" },
+              ]}
+              label="เลือกการกระทำ"
+              defaultValue={"all"}
+              onChange={(value) => setAction(value as string)}
+              searchable
+            />
+          </Group>
+          <Group mt={-10} grow align="center">
+            <Select
+              placeholder="เลือกเรียงตามวันที่ / เวลา"
+              data={[
+                { label: "ใหม่ไปเก่า", value: "desc" },
+                { label: "เก่าไปใหม่", value: "asc" },
+              ]}
+              label="เลือกเรียงตามวันที่ / เวลา"
+              defaultValue={"asc"}
+              onChange={(value) => setSortbyDate(value as string)}
+            />
+            <Text>&nbsp;</Text>
+          </Group>
+          <Stack gap={"xs"}> {mobileRows}</Stack>
+        </>
+      )}
     </Stack>
   );
 };

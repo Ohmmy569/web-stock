@@ -1,17 +1,17 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
-import UserTable from "@/app/components/UserTable";
 import PartTable from "@/app/components/PartTable";
 
-export default function page() {
+import { useDisclosure, useMediaQuery } from "@mantine/hooks";
+
+
+export default function Page() {
+  const matches = useMediaQuery("(min-width: 56.25em)");
   return(
     <div>
-      <PartTable />
+      <PartTable matches={matches} />
   
     </div>
   )
 }
 
-page.requiredAuth = true;
+Page.requiredAuth = true;

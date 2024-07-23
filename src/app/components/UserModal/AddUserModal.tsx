@@ -80,7 +80,7 @@ const AddUserModal: React.FC<ModalProps> = ({
         return;
       }
 
-      const resCheckUser = await fetch("http://localhost:3000/api/checkUser", {
+      const resCheckUser = await fetch("/api/checkUser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,7 +99,7 @@ const AddUserModal: React.FC<ModalProps> = ({
         });
         return;
       } else {
-        const res = await fetch("http://localhost:3000/api/register", {
+        const res = await fetch("/api/register", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -140,7 +140,7 @@ const AddUserModal: React.FC<ModalProps> = ({
     }
   };
   return (
-    <Modal opened={opened} onClose={onClose} title={title}>
+    <Modal opened={opened} onClose={onClose} title={title} centered>
       <form
         onSubmit={(event) => {
           event.preventDefault();

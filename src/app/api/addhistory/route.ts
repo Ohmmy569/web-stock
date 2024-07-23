@@ -5,11 +5,13 @@ import History from "@lib/models/history";
 export async function GET() {
   try {
     await connectMongoDB();
-    const history = await History.find();
+
+    const history = await History.find().sort({ createdAt: -1 }).limit(20);
+
     return NextResponse.json(history);
   } catch (error) {
     return NextResponse.json(
-      { message: "An error occured while fetching history." },
+      { message: "An error occurred while fetching history.", error },
       { status: 500 }
     );
   }
@@ -31,6 +33,7 @@ export async function POST(req: NextRequest) {
 
     await connectMongoDB();
 
+   
     await History.create({
       action,
       user,
@@ -43,10 +46,20 @@ export async function POST(req: NextRequest) {
       salePrice,
     });
 
-    return NextResponse.json({ message: "history created." }, { status: 201 });
+
+    const allHistory = await History.find().sort({ createdAt: 1 });
+
+    if (allHistory.length > 1000) {
+
+      const excessEntries = allHistory.slice(0, allHistory.length - 20);
+      const excessIds = excessEntries.map(entry => entry._id);
+      await History.deleteMany({ _id: { $in: excessIds } });
+    }
+
+    return NextResponse.json({ message: "History created." }, { status: 201 });
   } catch (error) {
     return NextResponse.json(
-      { message: "An error occured while creating history.", error },
+      { message: "An error occurred while creating history.", error },
       { status: 500 }
     );
   }

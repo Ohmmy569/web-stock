@@ -141,7 +141,7 @@ const EditPartModal: React.FC<ModalProps> = ({
         model = data.model[0];
       }
 
-      const res = await fetch(`http://localhost:3000/api/parts/${PartId}`,{
+      const res = await fetch(`/api/parts/${PartId}`,{
         method: "PUT",
         body: JSON.stringify({
           code: data.code,
@@ -176,7 +176,7 @@ const EditPartModal: React.FC<ModalProps> = ({
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title={title}>
+    <Modal opened={opened} onClose={onClose} title={title} centered>
       <form
         onSubmit={(event) => {
           event.preventDefault();

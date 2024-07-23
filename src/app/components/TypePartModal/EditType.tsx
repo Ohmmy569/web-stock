@@ -33,7 +33,6 @@ const EditTypePartModal: React.FC<ModalProps> = ({
     fetchPartType
 }) => {
   const TypeName = typeName || [];
-  console.log("TypePart", TypePart);
 
   const schema = z.object({
     name: z
@@ -112,7 +111,7 @@ const EditTypePartModal: React.FC<ModalProps> = ({
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title={title}>
+    <Modal opened={opened} onClose={onClose} title={title} centered>
       <form
         onSubmit={(event) => {
           event.preventDefault();

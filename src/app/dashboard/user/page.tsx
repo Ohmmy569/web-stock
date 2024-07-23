@@ -1,15 +1,15 @@
 "use client";
 import React from 'react'
-import { useRouter } from "next/router";
-import { useEffect } from "react";
 import UserTable from '@/app/components/UserTable';
+import { useMediaQuery } from '@mantine/hooks';
 
-function page() {
+function Page() {
+  const matches = useMediaQuery("(min-width: 56.25em)");
   return (
     <div>
-      <UserTable />
+      <UserTable matches={matches} />
     </div>
   )
 }
 
-export default page
+export default Page

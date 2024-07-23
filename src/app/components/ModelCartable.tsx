@@ -3,8 +3,12 @@ import React, { useEffect, useState } from "react";
 import {
   ActionIcon,
   Button,
+  Card,
+  Grid,
   Group,
+  Menu,
   Paper,
+  rem,
   Select,
   Stack,
   Table,
@@ -19,6 +23,7 @@ import {
   IconCar,
   IconRefresh,
   IconPlus,
+  IconDotsVertical,
 } from "@tabler/icons-react";
 
 import AddCarModal from "./ModelCarModal/AddCarModel";
@@ -26,7 +31,6 @@ import EditCarModal from "./ModelCarModal/EditCarModel";
 
 import { Car, CarBrand } from "../type";
 
-import { car } from "../type";
 import { showNotification } from "@mantine/notifications";
 import { useDisclosure } from "@mantine/hooks";
 import { modals } from "@mantine/modals";
@@ -35,7 +39,8 @@ function removeDuplicates(arr: any[]) {
   return arr.filter((item, index) => arr.indexOf(item) === index);
 }
 
-const CarTable = () => {
+const CarTable = (props: any) => {
+  let mobile = props.mobile;
   const [Addopened, { open: openAdd, close: closeAdd }] = useDisclosure(false);
   const [Editopened, { open: openEdit, close: closeEdit }] =
     useDisclosure(false);
@@ -43,7 +48,7 @@ const CarTable = () => {
   const [search, setSearch] = useState("");
   const [dataBrand, setDataBrand] = useState([] as any[] | undefined);
   const [modelName, setModelName] = useState([] as any[] | undefined);
-  const [editModelName , setEditModelName] = useState([] as any[] | undefined);
+  const [editModelName, setEditModelName] = useState([] as any[] | undefined);
   const [editCar, setEditCar] = useState({} as Car);
 
   const [brand, setBrand] = useState("all");
@@ -205,83 +210,209 @@ const CarTable = () => {
     }
   }
 
+  const mobileRows = filteredCars?.map((Car: Car, index: number) => (
+    <Card withBorder padding="xs" key={Car._id}>
+      <Grid justify="center" align="center" gutter="4" columns={4}>
+        <Grid.Col span={4}>
+          <Group justify="space-between">
+            <Text fw={700} size="md">
+              {Car.name}
+            </Text>
+
+            <Menu shadow="md" position="bottom-end" withArrow>
+              <Menu.Target>
+                <ActionIcon variant="subtle" color="blue" size="sm">
+                  <IconDotsVertical stroke={3} />
+                </ActionIcon>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item
+                  leftSection={
+                    <IconEdit style={{ width: rem(14), height: rem(14) }} />
+                  }
+                  color="yellow.9"
+                  onClick={() => OpenEdit(Car)}
+                >
+                  แก้ไข
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={
+                    <IconTrash style={{ width: rem(14), height: rem(14) }} />
+                  }
+                  color="red.9"
+                  onClick={() =>
+                    openDeleteModal(Car._id, Car.brand + " " + Car.name)
+                  }
+                >
+                  ลบ
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
+          </Group>
+          <Grid.Col span={4}>
+            <Text size="sm">ยี่ห้อ : {Car.brand}</Text>
+          </Grid.Col>
+        </Grid.Col>
+      </Grid>
+    </Card>
+  ));
+
   return (
     <Stack align="stretch" justify="center" gap="md">
-      <Group justify="space-between">
-        <Group align="center" gap={5}>
-          <IconCar size={30} />
-          <Text size="xl" fw={700}>
-            รายการรถยนต์
-          </Text>
-        </Group>
-        <Group gap={"xs"}>
-          <Tooltip label="รีเฟรชข้อมูล">
-            <ActionIcon
-              variant="filled"
-              color="blue"
-              onClick={() => {
-                fetchCar();
-              }}
-              size="lg"
-            >
-              <IconRefresh />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label="เพิ่มรายการอะไหล่">
-            <Button
-              variant="filled"
-              color="green"
-              radius="md"
-              leftSection={<IconPlus size={20} stroke={2.5} />}
-              onClick={OpenAdd}
-            >
-              เพิ่มรถยนต์
-            </Button>
-          </Tooltip>
-        </Group>
-      </Group>
+      {mobile ? (
+        <>
+          <Group justify="space-between">
+            <Group align="center" gap={5}>
+              <IconCar size={30} />
+              <Text size="xl" fw={700}>
+                รายการรถยนต์
+              </Text>
+            </Group>
+            <Group gap={"xs"}>
+              <Tooltip label="รีเฟรชข้อมูล">
+                <ActionIcon
+                  variant="filled"
+                  color="blue"
+                  onClick={() => {
+                    fetchCar();
+                  }}
+                  size="lg"
+                >
+                  <IconRefresh />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label="เพิ่มรายการอะไหล่">
+                <Button
+                  variant="filled"
+                  color="green"
+                  radius="md"
+                  leftSection={<IconPlus size={20} stroke={2.5} />}
+                  onClick={OpenAdd}
+                >
+                  เพิ่มรถยนต์
+                </Button>
+              </Tooltip>
+            </Group>
+          </Group>
 
-      <Group mt={-10} grow>
-        <TextInput
-          label="ค้นหาทุกข้อมูล"
-          placeholder="ค้นหาทุกข้อมูล"
-          leftSection={
-            <IconSearch
-              style={{ width: "1rem", height: "1rem" }}
-              stroke={1.5}
+          <Group mt={-10} grow>
+            <TextInput
+              label="ค้นหาทุกข้อมูล"
+              placeholder="ค้นหาทุกข้อมูล"
+              leftSection={
+                <IconSearch
+                  style={{ width: "1rem", height: "1rem" }}
+                  stroke={1.5}
+                />
+              }
+              value={search}
+              onChange={handleSearchChange}
             />
-          }
-          value={search}
-          onChange={handleSearchChange}
-        />
-        <Select
-          placeholder="เลือกยี่ห้อรถยนต์"
-          data={[
-            { label: "ทั้งหมด", value: "all" },
-            ...BrandCarName.map((brand) => ({ label: brand, value: brand })),
-          ]}
-          label="เลือกยี่ห้อรถยนต์"
-          onChange={(value) => setBrand(value as string)}
-          defaultValue={"all"}
-          searchable
-        />
-        <Text>&nbsp;</Text>
-        <Text>&nbsp;</Text>
-      </Group>
+            <Select
+              placeholder="เลือกยี่ห้อรถยนต์"
+              data={[
+                { label: "ทั้งหมด", value: "all" },
+                ...BrandCarName.map((brand) => ({
+                  label: brand,
+                  value: brand,
+                })),
+              ]}
+              label="เลือกยี่ห้อรถยนต์"
+              onChange={(value) => setBrand(value as string)}
+              defaultValue={"all"}
+              searchable
+            />
+            <Text>&nbsp;</Text>
+            <Text>&nbsp;</Text>
+          </Group>
 
-      <Paper shadow="sm" radius="md" p={"sm"} withBorder>
-        <Table highlightOnHover stickyHeader striped stickyHeaderOffset={55}>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th ta="center">ลำดับ</Table.Th>
-              <Table.Th ta="center">ยี่ห้อรถยนต์</Table.Th>
-              <Table.Th ta="center">รุ่นรถยนต์</Table.Th>
-              <Table.Th ta="center"> </Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{rows}</Table.Tbody>
-        </Table>
-      </Paper>
+          <Paper shadow="sm" radius="md" p={"sm"} withBorder>
+            <Table
+              highlightOnHover
+              stickyHeader
+              striped
+              stickyHeaderOffset={55}
+            >
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th ta="center">ลำดับ</Table.Th>
+                  <Table.Th ta="center">ยี่ห้อ</Table.Th>
+                  <Table.Th ta="center">รุ่น</Table.Th>
+                  <Table.Th ta="center"> </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{rows}</Table.Tbody>
+            </Table>
+          </Paper>
+        </>
+      ) : (
+        <>
+          <Group justify="space-between">
+            <Group align="center" gap={5}>
+              <IconCar size={30} />
+              <Text size="lg" fw={700}>
+                รายการรถยนต์
+              </Text>
+            </Group>
+            <Group gap={"xs"}>
+              <Tooltip label="รีเฟรชข้อมูล">
+                <ActionIcon
+                  variant="filled"
+                  color="blue"
+                  onClick={() => {
+                    fetchCar();
+                  }}
+                  size="1.855rem"
+                >
+                  <IconRefresh size={"1.3rem"} />
+                </ActionIcon>
+              </Tooltip>
+              <Tooltip label="เพิ่มรายการอะไหล่">
+                <Button
+                  size="xs"
+                  variant="filled"
+                  color="green"
+                  radius="md"
+                  leftSection={<IconPlus size={20} stroke={2.5} />}
+                  onClick={OpenAdd}
+                >
+                  เพิ่มรถยนต์
+                </Button>
+              </Tooltip>
+            </Group>
+          </Group>
+
+          <Group mt={-10} grow>
+            <TextInput
+              label="ค้นหาทุกข้อมูล"
+              placeholder="ค้นหาทุกข้อมูล"
+              leftSection={
+                <IconSearch
+                  style={{ width: "1rem", height: "1rem" }}
+                  stroke={1.5}
+                />
+              }
+              value={search}
+              onChange={handleSearchChange}
+            />
+            <Select
+              placeholder="เลือกยี่ห้อรถยนต์"
+              data={[
+                { label: "ทั้งหมด", value: "all" },
+                ...BrandCarName.map((brand) => ({
+                  label: brand,
+                  value: brand,
+                })),
+              ]}
+              label="เลือกยี่ห้อรถยนต์"
+              onChange={(value) => setBrand(value as string)}
+              defaultValue={"all"}
+              searchable
+            />
+          </Group>
+          <Stack gap={"xs"}> {mobileRows}</Stack>
+        </>
+      )}
 
       <AddCarModal
         opened={Addopened}
@@ -291,7 +422,7 @@ const CarTable = () => {
         modelCarName={modelName}
         fetchCar={fetchCar}
       />
-     
+
       <EditCarModal
         opened={Editopened}
         onClose={closeEdit}
@@ -300,8 +431,7 @@ const CarTable = () => {
         modelCarName={modelName}
         brandCarName={BrandCarName}
         fetchCar={fetchCar}
-    
-      /> 
+      />
     </Stack>
   );
 };

@@ -2,13 +2,17 @@
 import React from 'react'
 import PartTypeTable from '@/app/components/PartTypeTable'
 
+import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 
-function page() {
+
+function Page() {
+  
+  const matches = useMediaQuery("(min-width: 56.25em)");
   return (
     <div>
-      <PartTypeTable />
+      <PartTypeTable matches={matches}/>
     </div>
   )
 }
 
-export default page
+export default Page

@@ -44,7 +44,7 @@ const RestockPartModal: React.FC<ModalProps> = ({
   const handlesubmit = async (data: any , current : number , name : string , PartId : any) => {
     try{
  
-      const resRe = await fetch(`http://localhost:3000/api/instock/${PartId}`, {
+      const resRe = await fetch(`/api/instock/${PartId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -111,7 +111,7 @@ const RestockPartModal: React.FC<ModalProps> = ({
         <Box>
           <NumberInput
           description={"อยู่ในคลัง : " + Part?.amount + " ชิ้น"}
-            label="จำนวนoooo"
+            label="จำนวน"
             placeholder="จำนวน"
             required
             {...form.getInputProps("amount")}

@@ -80,7 +80,7 @@ const EditUserModal: React.FC<ModalProps> = ({
 
   const handlesubmit = async (data: any , UserId : string) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/users/${UserId}`, {
+      const res = await fetch(`/api/users/${UserId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -111,7 +111,7 @@ const EditUserModal: React.FC<ModalProps> = ({
     }
   };
   return (
-    <Modal opened={opened} onClose={onClosed} title={title}>
+    <Modal opened={opened} onClose={onClosed} title={title} centered>
       <form
         onSubmit={(event) => {
           event.preventDefault();

@@ -29,7 +29,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { data: session, status  } = useSession();
+  const { data: session, status } = useSession();
 
   const router = useRouter();
 
@@ -39,7 +39,7 @@ export default function DashboardLayout({
     }
   }, [status, router]);
 
-  const [opened, { toggle }] = useDisclosure();
+  const [opened,  { toggle , close}] = useDisclosure();
   const data = [
     {
       link: "/dashboard/parts",
@@ -52,9 +52,9 @@ export default function DashboardLayout({
       icon: IconArticleFilled,
     },
     {
-      link : "/dashboard/carbrand",
+      link: "/dashboard/carbrand",
       label: "ยี่ห้อรถยนต์",
-      icon : IconBrandToyota
+      icon: IconBrandToyota,
     },
     {
       link: "/dashboard/carmodel",
@@ -72,6 +72,9 @@ export default function DashboardLayout({
   const handleClick = (event: any, index: any) => {
     router.push(data[index].link);
     event.preventDefault();
+    close();
+
+    console.log("asdasd")
   };
 
   const pathname = usePathname();
@@ -82,7 +85,7 @@ export default function DashboardLayout({
       message: "ออกจากระบบแล้ว",
       color: "blue",
     });
-  }
+  };
 
   if (status === "authenticated") {
     const thisUser = session?.user as {
@@ -169,12 +172,11 @@ export default function DashboardLayout({
                   c={"myblue"}
                   fw={900}
                   p={10}
-               
                 />
                 <NavLink
                   label={<strong>ออกจากระบบ</strong>}
                   leftSection={<IconLogout size="2rem" stroke={2} />}
-                  onClick={() => signOut()}
+                  onClick={() => LogOut()}
                   color={"red"}
                   c={"red"}
                   fw={900}

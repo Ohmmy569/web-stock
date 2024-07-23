@@ -46,7 +46,7 @@ const OutStockPartModal: React.FC<ModalProps> = ({
   ) => {
     try {
       const resRe = await fetch(
-        `http://localhost:3000/api/outstock/${PartId}`,
+        `/api/outstock/${PartId}`,
         {
           method: "PUT",
           headers: {

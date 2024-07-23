@@ -168,7 +168,7 @@ const AddPartModal: React.FC<ModalProps> = ({
   };
 
   return (
-    <Modal opened={opened} onClose={onClose} title={title}>
+    <Modal opened={opened} onClose={onClose} title={title} centered>
       <form
         onSubmit={(event) => {
           event.preventDefault();
