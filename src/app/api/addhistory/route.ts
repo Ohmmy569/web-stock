@@ -6,7 +6,7 @@ export async function GET() {
   try {
     await connectMongoDB();
 
-    const history = await History.find().sort({ createdAt: -1 }).limit(20);
+    const history = await History.find().sort({ createdAt: -1 });
 
     return NextResponse.json(history);
   } catch (error) {
