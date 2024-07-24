@@ -229,7 +229,7 @@ const PartHistoryTable = (props: any) => {
                 { label: "เก่าไปใหม่", value: "asc" },
               ]}
               label="เลือกเรียงตามวันที่ / เวลา"
-              defaultValue={"asc"}
+              defaultValue={"desc"}
               onChange={(value) => setSortbyDate(value as string)}
             />
             <Text>&nbsp;</Text>
@@ -312,7 +312,7 @@ const PartHistoryTable = (props: any) => {
                 { label: "เก่าไปใหม่", value: "asc" },
               ]}
               label="เลือกเรียงตามวันที่ / เวลา"
-              defaultValue={"asc"}
+              defaultValue={"desc"}
               onChange={(value) => setSortbyDate(value as string)}
             />
             <Text>&nbsp;</Text>
