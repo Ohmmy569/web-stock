@@ -31,7 +31,7 @@ import EditUserModal from "@components/UserModal/EditUserModal";
 import NewPassModal from "@components/UserModal/NewPasswordModal";
 import { modals } from "@mantine/modals";
 import { showNotification } from "@mantine/notifications";
-import { fetchingUser } from "@/app/calcu/fetching";
+
 
 const UserTable = (props: any) => {
   let mobile = props.matches;
@@ -58,7 +58,15 @@ const UserTable = (props: any) => {
           "Content-Type": "application/json",
         },
       });
-      const data = (await res.json()) as User[];
+      if(!res.ok) {
+        showNotification({
+          title: "เรียกข้อมูลผู้ใช้งานไม่สำเร็จ",
+          message: "เกิดข้อผิดพลาดในการเรียกข้อมูลผู้ใช้งาน",
+          color: "red",
+        });
+        return; 
+      }
+      const data = await res.json();
       setUsers(data);
     } catch (error: any) {
       showNotification({
