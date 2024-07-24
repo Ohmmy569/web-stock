@@ -40,7 +40,7 @@ function removeDuplicates(arr: any[]) {
 }
 
 const CarTable = (props: any) => {
-  let mobile = props.mobile;
+  let mobile = props.matches;
   const [Addopened, { open: openAdd, close: closeAdd }] = useDisclosure(false);
   const [Editopened, { open: openEdit, close: closeEdit }] =
     useDisclosure(false);
@@ -194,6 +194,7 @@ const CarTable = (props: any) => {
           color: "blue",
         });
         fetchCar();
+        setCars(Cars?.filter((Car: Car) => Car._id !== CarId));
       } else {
         showNotification({
           title: "เกิดข้อผิดพลาดในการลบรุ่นรถยนต์",
@@ -421,6 +422,8 @@ const CarTable = (props: any) => {
         brandCarName={BrandCarName}
         modelCarName={modelName}
         fetchCar={fetchCar}
+        setCarsModelName={setCars}
+        allCars={Cars as Car[]}
       />
 
       <EditCarModal
@@ -428,9 +431,11 @@ const CarTable = (props: any) => {
         onClose={closeEdit}
         title={<Text fw={900}> แก้ไขผู้ใช้งาน </Text>}
         Cars={editCar}
-        modelCarName={modelName}
+        allCars={Cars as Car[]}
         brandCarName={BrandCarName}
         fetchCar={fetchCar}
+        setCarsModelName={setCars}
+        modelCarName={editModelName}
       />
     </Stack>
   );

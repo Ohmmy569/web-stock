@@ -31,6 +31,7 @@ import EditUserModal from "@components/UserModal/EditUserModal";
 import NewPassModal from "@components/UserModal/NewPasswordModal";
 import { modals } from "@mantine/modals";
 import { showNotification } from "@mantine/notifications";
+import { fetchingUser } from "@/app/calcu/fetching";
 
 const UserTable = (props: any) => {
   let mobile = props.matches;
@@ -152,6 +153,7 @@ const UserTable = (props: any) => {
         color: "green",
       });
       fetchUser();
+      setUsers(users?.filter((user) => user._id !== UserId));
     } catch (error: any) {
       showNotification({
         title: "ลบบัญชีผู้ใช้งานไม่สำเร็จ",
@@ -183,71 +185,67 @@ const UserTable = (props: any) => {
   const mobileRows = filteredUsers?.map((user: User) => (
     <Card withBorder padding="xs" key={user._id}>
       <Grid justify="center" align="center" gutter="4" columns={4}>
-      <Grid justify="center" align="center" gutter="4" columns={4}>
-        <Grid.Col span={4}>
-          <Group justify="space-between">
-            <Text fw={700} size="md">
-              {user.email}
-            </Text>
+        <Grid justify="center" align="center" gutter="4" columns={4}>
+          <Grid.Col span={4}>
+            <Group justify="space-between">
+              <Text fw={700} size="md">
+                {user.email}
+              </Text>
 
-            <Menu shadow="md" position="bottom-end" withArrow>
-              <Menu.Target>
-                <ActionIcon variant="subtle" color="blue" size="sm">
-                  <IconDotsVertical stroke={3} />
-                </ActionIcon>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Item
-                  leftSection={
-                    <IconEdit style={{ width: rem(14), height: rem(14) }} />
-                  }
-                  color="yellow.9"
-                  onClick={() => OpenEdit(user)}
-                >
-                  แก้ไข
-                </Menu.Item>
-                <Menu.Item
-                  leftSection={
-                    <IconTrash style={{ width: rem(14), height: rem(14) }} />
-                  }
-                  color="red.9"
-                  onClick={() =>
-                    openDeleteModal(user._id, user.email)
-                  }
-                  disabled={user.role === "admin"}
-                >
-                  ลบ
-                </Menu.Item>
-                <Menu.Item
-                  leftSection={
-                    <IconPassword 
-                      style={{ width: rem(14), height: rem(14) }}
-                    />
-                  }
-                  color="blue.9"
-                  onClick={() => OpenPass(user)}
-                >
-                  เปลี่ยนรหัสผ่าน
-                </Menu.Item>
-            
-              </Menu.Dropdown>
-            </Menu>
-          </Group>
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <Text size="sm">
-            <b>เวลาที่สร้าง : </b>
-            {new Date(user.createdAt).toLocaleString()}
-          </Text>
-        </Grid.Col>
-        <Grid.Col span={4}>
-          <Text size="sm">
-            <b>บทบาท : </b>
-            {user.role}
-          </Text>
-        </Grid.Col>
-        
-      </Grid>
+              <Menu shadow="md" position="bottom-end" withArrow>
+                <Menu.Target>
+                  <ActionIcon variant="subtle" color="blue" size="sm">
+                    <IconDotsVertical stroke={3} />
+                  </ActionIcon>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item
+                    leftSection={
+                      <IconEdit style={{ width: rem(14), height: rem(14) }} />
+                    }
+                    color="yellow.9"
+                    onClick={() => OpenEdit(user)}
+                  >
+                    แก้ไข
+                  </Menu.Item>
+                  <Menu.Item
+                    leftSection={
+                      <IconTrash style={{ width: rem(14), height: rem(14) }} />
+                    }
+                    color="red.9"
+                    onClick={() => openDeleteModal(user._id, user.email)}
+                    disabled={user.role === "admin"}
+                  >
+                    ลบ
+                  </Menu.Item>
+                  <Menu.Item
+                    leftSection={
+                      <IconPassword
+                        style={{ width: rem(14), height: rem(14) }}
+                      />
+                    }
+                    color="blue.9"
+                    onClick={() => OpenPass(user)}
+                  >
+                    เปลี่ยนรหัสผ่าน
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            </Group>
+          </Grid.Col>
+          <Grid.Col span={4}>
+            <Text size="sm">
+              <b>เวลาที่สร้าง : </b>
+              {new Date(user.createdAt).toLocaleString()}
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={4}>
+            <Text size="sm">
+              <b>บทบาท : </b>
+              {user.role}
+            </Text>
+          </Grid.Col>
+        </Grid>
       </Grid>
     </Card>
   ));
@@ -382,6 +380,8 @@ const UserTable = (props: any) => {
         title={<Text fw={900}> เพิ่มผู้ใช้งาน </Text>}
         Nameusers={nameEmail}
         fetchUser={fetchUser}
+        Users={users as User[]}
+        setUsers={setUsers}
       />
 
       <EditUserModal
@@ -391,6 +391,8 @@ const UserTable = (props: any) => {
         users={editUser}
         Nameusers={editNameEmail}
         fetchUser={fetchUser}
+        setUsers={setUsers}
+        Users={users as User[]}
       />
 
       <NewPassModal

@@ -1,12 +1,5 @@
 "use client";
-import {
-  Box,
-  Button,
-  Center,
-  Group,
-  Modal,
-  TextInput,
-} from "@mantine/core";
+import { Box, Button, Center, Group, Modal, TextInput } from "@mantine/core";
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
@@ -18,19 +11,22 @@ interface ModalProps {
   opened: boolean;
   onClose: () => void;
   title: React.ReactNode;
-  typeName:  string[] | undefined;
-  TypePart : PartType;
-  fetchPartType : () => void;
+  typeName: string[] | undefined;
+  TypePart: PartType;
+  fetchPartType: () => void;
+  types: string[];
+  setTypes: (value: any[]) => void;
 }
-
 
 const EditTypePartModal: React.FC<ModalProps> = ({
   opened,
   onClose,
   title,
   typeName,
-    TypePart,
-    fetchPartType
+  TypePart,
+  fetchPartType,
+  types,
+  setTypes,
 }) => {
   const TypeName = typeName || [];
 
@@ -46,12 +42,12 @@ const EditTypePartModal: React.FC<ModalProps> = ({
           return true; // Valid if the name doesn't exist in Partname
         },
         { message: "ชื่อประเภทซ้ำ" }
-      )
+      ),
   });
 
   const form = useForm({
     initialValues: {
-      name: TypePart?.name || ""
+      name: TypePart?.name || "",
     },
     validate: zodResolver(schema),
   });
@@ -60,8 +56,7 @@ const EditTypePartModal: React.FC<ModalProps> = ({
     form.setFieldValue("name", TypePart?.name || "");
   }, [TypePart]);
 
-
-  const handlesubmit = async (data: any , typePartId : any) => {
+  const handlesubmit = async (data: any, typePartId: any) => {
     try {
       if (TypeName.includes(data.name)) {
         showNotification({
@@ -90,6 +85,7 @@ const EditTypePartModal: React.FC<ModalProps> = ({
           icon: null,
         });
         fetchPartType();
+        setTypes([...types, data.name]);
         form.reset();
       } else {
         showNotification({
@@ -100,7 +96,6 @@ const EditTypePartModal: React.FC<ModalProps> = ({
         });
       }
     } catch (error) {
-  
       showNotification({
         title: "แก้ไขประเภทอ่ะไหล่สำเร็จ",
         message: "เกิดข้อผิดพลาดระหว่างแก้ไขประเภทอ่ะไหล่",
@@ -116,7 +111,7 @@ const EditTypePartModal: React.FC<ModalProps> = ({
         onSubmit={(event) => {
           event.preventDefault();
           form.onSubmit((data) => {
-            handlesubmit(data , TypePart._id);
+            handlesubmit(data, TypePart._id);
             form.reset();
             onClose();
           })();

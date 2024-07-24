@@ -13,6 +13,7 @@ import {
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
+import { User } from "@/app/type";
 
 interface ModalProps {
   opened: boolean;
@@ -20,6 +21,8 @@ interface ModalProps {
   title: React.ReactNode;
   Nameusers: string[];
   fetchUser: () => void;
+  Users : User[];
+  setUsers : (value : any[]) => void;
 }
 
 const AddUserModal: React.FC<ModalProps> = ({
@@ -28,6 +31,8 @@ const AddUserModal: React.FC<ModalProps> = ({
   title,
   Nameusers,
   fetchUser,
+  Users,
+  setUsers
 }) => {
   const NameUsers = Nameusers || [];
   const schema = z.object({
@@ -126,8 +131,10 @@ const AddUserModal: React.FC<ModalProps> = ({
             icon: null,
           });
         }
-        onClose();
+  
+        setUsers([...Users, { email, role: data.role }]);
         fetchUser();
+        onClose();
       }
     } catch (error) {
       showNotification({
@@ -146,6 +153,7 @@ const AddUserModal: React.FC<ModalProps> = ({
           event.preventDefault();
           form.onSubmit((data) => {
             handlesubmit(data);
+            onClose();
             form.reset();
         
           })();

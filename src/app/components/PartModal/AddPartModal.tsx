@@ -16,8 +16,7 @@ import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 
-import { Car } from "@/app/type";
-import { useRouter } from "next/navigation";
+import { Car , Part } from "@/app/type";
 
 interface ModalProps {
   opened: boolean;
@@ -28,7 +27,9 @@ interface ModalProps {
   carBrand: string[];
   Cars: Car[] | undefined;
   Code: string[] | undefined;
-  fetchPart : () => void;
+  fetchPart: () => void;
+  setParts: (value: any[]) => void;
+  parts: Part[];
 }
 
 function removeDuplicates(arr: any[]) {
@@ -44,11 +45,12 @@ const AddPartModal: React.FC<ModalProps> = ({
   carBrand,
   Cars,
   Code,
-  fetchPart
+  fetchPart,
+  setParts,
+  parts,
 }) => {
   const [CarModel, setCarModel] = useState<string[]>([]);
   const [selectedBrand, setSelectedBrand] = useState<string>("");
-  const router = useRouter();
 
   const PartName = partName || [];
   const CodeName = Code || [];
@@ -96,7 +98,6 @@ const AddPartModal: React.FC<ModalProps> = ({
       model: [],
       costPrice: "",
       salePrice: "",
-     
     },
     validate: zodResolver(schema),
   });
@@ -138,26 +139,35 @@ const AddPartModal: React.FC<ModalProps> = ({
           "Content-Type": "application/json",
         },
       });
-      if(res.ok){
-      showNotification({
-        title: "เพิ่มอ่ะไหล่สำเร็จ",
-        message: "เพิ่มอ่ะไหล่ " + data.name + " สำเร็จ",
-        color: "green",
-        icon: null,
-      });
-    }
-    else {
-      showNotification({
-        title: "เพิ่มอ่ะไหล่ไม่สำเร็จ",
-        message: "เกิดข้อผิดพลาดระหว่างเพิ่มอ่ะไหล่",
-        color: "red",
-        icon: null,
-      });
-    }
-    fetchPart();
+      if (res.ok) {
+        showNotification({
+          title: "เพิ่มอ่ะไหล่สำเร็จ",
+          message: "เพิ่มอ่ะไหล่ " + data.name + " สำเร็จ",
+          color: "green",
+          icon: null,
+        });
+        setParts([...parts, {
+          id: parts.length + 1,
+          code: data.code,
+          name: data.name,
+          type: data.typeofPart,
+          brand: data.brand,
+          model: model,
+          costPrice: data.costPrice,
+          sellPrice: data.salePrice,
+        }]);
+        fetchPart();
+      } else {
+        showNotification({
+          title: "เพิ่มอ่ะไหล่ไม่สำเร็จ",
+          message: "เกิดข้อผิดพลาดระหว่างเพิ่มอ่ะไหล่",
+          color: "red",
+          icon: null,
+        });
+      }
+
       form.reset();
     } catch (error) {
-  
       showNotification({
         title: "เพิ่มอ่ะไหล่ไม่สำเร็จ",
         message: "เกิดข้อผิดพลาดระหว่างเพิ่มอ่ะไหล่" + error,

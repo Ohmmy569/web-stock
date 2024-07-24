@@ -11,6 +11,7 @@ interface ModalProps {
   title: React.ReactNode;
   BrandCarName: string[] | undefined;
   fetchCarBrand: () => void;
+  setCarBrandName: (value: string[]) => void;
 }
 
 const AddBrandCarModal: React.FC<ModalProps> = ({
@@ -19,6 +20,7 @@ const AddBrandCarModal: React.FC<ModalProps> = ({
   title,
   BrandCarName,
   fetchCarBrand,
+  setCarBrandName,
 }) => {
   const TypeName = BrandCarName || [];
 
@@ -73,7 +75,9 @@ const AddBrandCarModal: React.FC<ModalProps> = ({
             icon: null,
         });
         form.reset();
+
         fetchCarBrand();
+        setCarBrandName([...TypeName, data.name]);
       } else {
         showNotification({
             title: "เพิ่มยี่ห้อรถยนต์ไม่สำเร็จ",

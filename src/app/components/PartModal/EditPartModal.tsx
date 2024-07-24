@@ -29,6 +29,8 @@ interface ModalProps {
   Cars: Car[] | undefined;
   EditPart: Part;
   fetchPart : () => void;
+  setParts : (value : any[]) => void;
+  parts: Part[];
 }
 
 function removeDuplicates(arr: any[]) {
@@ -45,7 +47,9 @@ const EditPartModal: React.FC<ModalProps> = ({
   Cars,
   EditPart,
   partCode,
-  fetchPart
+  fetchPart,
+  setParts,
+  parts
 }) => {
   const [CarModel, setCarModel] = useState<string[]>([]);
   const [selectedBrand, setSelectedBrand] = useState<string>(
@@ -103,15 +107,16 @@ const EditPartModal: React.FC<ModalProps> = ({
   });
 
   useEffect(() => {
-    setSelectedBrand(EditPart?.brand);
     if (selectedBrand) {
       const filteredModels =
         Cars?.filter((car) => car.brand === selectedBrand).map(
           (car) => car.name
         ) || [];
-      //append value "all" to the beginning of the array
       setCarModel(removeDuplicates(["ใช้ได้ทุกรุ่น", ...filteredModels]));
     }
+  }, [selectedBrand, Cars]);
+
+  useEffect(() => {
     form.setValues({
       code: EditPart?.code,
       name: EditPart?.name,
@@ -121,7 +126,8 @@ const EditPartModal: React.FC<ModalProps> = ({
       costPrice: EditPart?.costPrice,
       salePrice: EditPart?.sellPrice,
     });
-  }, [selectedBrand, Cars, EditPart]);
+    setSelectedBrand(EditPart?.brand || "");
+  }, [EditPart]);
 
   const handlesubmit = async (data: any , PartId : any) => {
     try {
@@ -164,6 +170,11 @@ const EditPartModal: React.FC<ModalProps> = ({
         icon: null,
       });
       form.reset();
+      setParts(
+        parts.map((parts) =>
+          parts._id === PartId ? { ...parts, code: data.code , name: data.name , type: data.typeofPart , brand: data.brand , model: model , costPrice: data.costPrice , sellPrice: data.salePrice } : parts
+        )
+      )
       fetchPart();
     } catch (error) {
       showNotification({

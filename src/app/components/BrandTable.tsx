@@ -123,6 +123,7 @@ const BrandTable = (props: any) => {
           message: "ลบยี่ห้อ " + CarBrandname + " สำเร็จ",
           color: "blue",
         });
+        setCarBrand(CarBrand?.filter((CarBrand) => CarBrand._id !== CarBrandId));
         fetchCarBrand();
       } else {
         showNotification({
@@ -343,6 +344,7 @@ const BrandTable = (props: any) => {
         title={<Text fw={900}>เพิ่มยี่ห้อรถยนต์</Text>}
         BrandCarName={BrandName}
         fetchCarBrand={fetchCarBrand}
+        setCarBrandName={setBrandName}
       />
 
       <EditBrandCarModal
@@ -352,6 +354,7 @@ const BrandTable = (props: any) => {
         BrandCarName={BrandName}
         BrandCar={editCarBrand}
         fetchCarBrand={fetchCarBrand}
+        setCarBrandName={setBrandName}
       />
     </Stack>
   );

@@ -12,6 +12,7 @@ import {
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
+import { Car } from "@/app/type"
 
 interface ModalProps {
   opened: boolean;
@@ -20,6 +21,8 @@ interface ModalProps {
   brandCarName: string[] | undefined;
   modelCarName: string[] | undefined;
   fetchCar: () => void;
+  setCarsModelName: (value: any[]) => void;
+  allCars : Car[]
 }
 
 const AddCarModal: React.FC<ModalProps> = ({
@@ -29,6 +32,8 @@ const AddCarModal: React.FC<ModalProps> = ({
   modelCarName,
   brandCarName,
   fetchCar,
+  setCarsModelName,
+  allCars
 }) => {
   const BrandCarName = brandCarName || [];
   const ModelCarName = modelCarName || [];
@@ -88,6 +93,10 @@ const AddCarModal: React.FC<ModalProps> = ({
         });
         form.reset();
         fetchCar();
+        setCarsModelName([...allCars, {
+          brand: data.brand,
+          model: data.model,
+        }]);
       } else {
         showNotification({
           title: "เพิ่มยี่ห้อรถยนต์ไม่สำเร็จ",

@@ -244,6 +244,7 @@ const PartTable = (props: any) => {
           color: "green",
         });
         fetchPart();
+        setParts(Parts?.filter((Part) => Part._id !== PartId));
       } else {
         showNotification({
           title: "ลบรายการอ่ะไหล่ไม่สำเร็จ",
@@ -698,6 +699,8 @@ const PartTable = (props: any) => {
         Cars={ModalCars}
         Code={modalCode}
         fetchPart={fetchPart}
+        setParts={setParts}
+        parts={Parts as Part[]}
       />
 
       <EditPartModal
@@ -709,6 +712,7 @@ const PartTable = (props: any) => {
             แก้ไขอ่ะไหล่ <strong>{EditCode}</strong>{" "}
           </Text>
         }
+        parts={Parts as Part[]}
         EditPart={editPart}
         partName={EditPartName}
         partCode={EditPartCode}
@@ -716,6 +720,7 @@ const PartTable = (props: any) => {
         carBrand={ModalcarBrand}
         Cars={ModalCars}
         fetchPart={fetchPart}
+        setParts={setParts}
       />
       <RestockPartModal
         opened={Restockopened}
@@ -724,15 +729,18 @@ const PartTable = (props: any) => {
         Part={RestockPart}
         username={name as string}
         fetchPart={fetchPart}
+        setParts={setParts}
+        parts={Parts as Part[]}
       />
       <OutStockPartModal
         opened={OutStockopened}
         onClose={closeOutStock}
         title={<Text fw={900}> เบิกสินค้า {RestockPart.name} </Text>}
         Part={RestockPart}
-        
         username={name as string}
         fetchPart={fetchPart}
+        setParts={setParts}
+        parts={Parts as Part[]}
       />
     </Stack>
   );

@@ -14,6 +14,8 @@ interface ModalProps {
   title: React.ReactNode;
   username: string;
   fetchPart: () => void;
+  setParts : (value : any[]) => void;
+  parts : Part[];
 }
 
 const OutStockPartModal: React.FC<ModalProps> = ({
@@ -23,6 +25,8 @@ const OutStockPartModal: React.FC<ModalProps> = ({
   title,
   username,
   fetchPart,
+  setParts,
+  parts,
 }) => {
   const schema = z.object({
     amount: z
@@ -86,6 +90,11 @@ const OutStockPartModal: React.FC<ModalProps> = ({
         });
       }
       fetchPart();
+      setParts(
+        parts.map((parts) =>
+          parts._id === PartId ? { ...parts, amount: current - data.amount } : parts
+        )
+      )
       form.reset();
     } catch (error) {
       form.reset();

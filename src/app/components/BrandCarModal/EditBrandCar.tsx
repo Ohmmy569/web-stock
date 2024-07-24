@@ -13,6 +13,7 @@ interface ModalProps {
   BrandCarName: string[] | undefined;
   fetchCarBrand: () => void;
   BrandCar: CarBrand;
+  setCarBrandName: (value: string[]) => void;
 }
 
 const EditBrandCarModal: React.FC<ModalProps> = ({
@@ -21,7 +22,8 @@ const EditBrandCarModal: React.FC<ModalProps> = ({
   title,
   BrandCarName,
   fetchCarBrand,
-  BrandCar
+  BrandCar,
+  setCarBrandName,
 }) => {
   const TypeName = BrandCarName || [];
 
@@ -75,25 +77,26 @@ const EditBrandCarModal: React.FC<ModalProps> = ({
       });
       if (resType.ok) {
         showNotification({
-            title: "เพิ่มยี่ห้อรถยนต์สำเร็จ",
-            message: "เพิ่มยี่ห้อรถยนต์สำเร็จ",
+            title: "แก้ไขยี่ห้อรถยนต์สำเร็จ",
+            message: "แก้ไขยี่ห้อรถยนต์สำเร็จ",
             color: "green",
             icon: null,
         });
         form.reset();
         fetchCarBrand();
+        setCarBrandName([...TypeName, data.name]);
       } else {
         showNotification({
-            title: "เพิ่มยี่ห้อรถยนต์ไม่สำเร็จ",
-            message: "เกิดข้อผิดพลาดระหว่างเพิ่มยี่ห้อรถยนต์",
+            title: "แก้ไขยี่ห้อรถยนต์ไม่สำเร็จ",
+            message: "เกิดข้อผิดพลาดระหว่างแก้ไขยี่ห้อรถยนต์",
             color: "red",
             icon: null,
         });
       }
     } catch (error) {
       showNotification({
-        title: "เพิ่มยี่ห้อรถยนต์ไม่สำเร็จ",
-        message: "เกิดข้อผิดพลาดระหว่างเพิ่มยี่ห้อรถยนต์",
+        title: "แก้ไขยี่ห้อรถยนต์ไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดระหว่างแก้ไขยี่ห้อรถยนต์",
         color: "red",
         icon: null,
       });

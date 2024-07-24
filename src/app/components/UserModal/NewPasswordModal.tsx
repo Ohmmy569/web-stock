@@ -90,6 +90,7 @@ const NewPassModal: React.FC<ModalProps> = ({
           event.preventDefault();
           form.onSubmit((data) => {
             handlesubmit(data, users._id);
+            onClosed();
             form.reset();
           })();
         }}

@@ -23,6 +23,8 @@ interface ModalProps {
   users: User;
   Nameusers: string[] | undefined;
   fetchUser : () => void;
+  setUsers : (value : any[]) => void;
+  Users : User[];
 }
 
 const EditUserModal: React.FC<ModalProps> = ({
@@ -32,6 +34,8 @@ const EditUserModal: React.FC<ModalProps> = ({
   users,
   Nameusers,
   fetchUser,
+  setUsers,
+  Users
 }) => {
   const schema = z.object({
     username: z
@@ -99,6 +103,11 @@ const EditUserModal: React.FC<ModalProps> = ({
           color: "green",
         });
         fetchUser();
+        setUsers(
+          Users.map((user) =>
+            user._id === UserId ? { ...user, email: data.username , role: data.role } : user
+          )
+        )
         onClose();
       }
     } catch (error: any) {
@@ -117,6 +126,7 @@ const EditUserModal: React.FC<ModalProps> = ({
           event.preventDefault();
           form.onSubmit((data) => {
             handlesubmit(data , users._id);
+            onClose();
             form.reset();
           })();
         }}

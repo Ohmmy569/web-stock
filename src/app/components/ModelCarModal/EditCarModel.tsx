@@ -22,7 +22,9 @@ interface ModalProps {
   brandCarName: string[] | undefined;
   modelCarName: string[] | undefined;
   fetchCar: () => void;
-  Cars : Car | undefined;
+  Cars: Car | undefined;
+  setCarsModelName: (value: any[]) => void;
+  allCars: Car[];
 }
 
 const EditCarModal: React.FC<ModalProps> = ({
@@ -32,7 +34,9 @@ const EditCarModal: React.FC<ModalProps> = ({
   modelCarName,
   brandCarName,
   fetchCar,
-  Cars
+  Cars,
+  setCarsModelName,
+  allCars,
 }) => {
   const BrandCarName = brandCarName || [];
   const ModelCarName = modelCarName || [];
@@ -56,7 +60,7 @@ const EditCarModal: React.FC<ModalProps> = ({
   const form = useForm({
     initialValues: {
       brand: Cars?.brand || "",
-      model: Cars?.name ||"",
+      model: Cars?.name || "",
     },
     validate: zodResolver(schema),
   });
@@ -66,7 +70,7 @@ const EditCarModal: React.FC<ModalProps> = ({
     form.setFieldValue("model", Cars?.name || "");
   }, [Cars]);
 
-  const handlesubmit = async (data: any , carID : any) => {
+  const handlesubmit = async (data: any, carID: any) => {
     try {
       if (ModelCarName.includes(data.model)) {
         showNotification({
@@ -97,6 +101,13 @@ const EditCarModal: React.FC<ModalProps> = ({
         });
         form.reset();
         fetchCar();
+        setCarsModelName([
+          ...allCars,
+          {
+            brand: data.brand,
+            model: data.model,
+          },
+        ]);
       } else {
         showNotification({
           title: "เพิ่มยี่ห้อรถยนต์ไม่สำเร็จ",
@@ -121,7 +132,7 @@ const EditCarModal: React.FC<ModalProps> = ({
         onSubmit={(event) => {
           event.preventDefault();
           form.onSubmit((data) => {
-            handlesubmit(data , Cars?._id);
+            handlesubmit(data, Cars?._id);
             form.reset();
             onClose();
           })();

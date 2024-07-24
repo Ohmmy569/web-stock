@@ -11,6 +11,8 @@ interface ModalProps {
   title: React.ReactNode;
   typeName: string[] | undefined;
   fetchPartType: () => void;
+  types : string[];
+  setTypes : (value : any[]) => void;
 }
 
 const AddTypePartModal: React.FC<ModalProps> = ({
@@ -19,6 +21,8 @@ const AddTypePartModal: React.FC<ModalProps> = ({
   title,
   typeName,
   fetchPartType,
+  types,
+  setTypes
 }) => {
   const TypeName = typeName || [];
 
@@ -73,6 +77,7 @@ const AddTypePartModal: React.FC<ModalProps> = ({
           icon: null,
         });
         form.reset();
+        setTypes([...types, data.name]);
         fetchPartType();
       } else {
         showNotification({

@@ -342,6 +342,8 @@ const PartTypeTable = (props: any) => {
         title={<Text fw={900}> เพิ่มประเภทอะไหล่ </Text>}
         typeName={TypeName}
         fetchPartType={fetchPartType}
+        types={PartType as any}
+        setTypes={setPartType}
       />
 
       <EditTypePartModal
@@ -351,6 +353,8 @@ const PartTypeTable = (props: any) => {
         typeName={TypeName}
         TypePart={editPartType}
         fetchPartType={fetchPartType}
+        types={PartType as any}
+        setTypes={setPartType}
       />
     </Stack>
   );

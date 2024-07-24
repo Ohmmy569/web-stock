@@ -20,6 +20,8 @@ interface ModalProps {
   title: React.ReactNode;
   username : string;
   fetchPart : () => void;
+  setParts : (value : any[]) => void;
+  parts : Part[];
 }
 
 const RestockPartModal: React.FC<ModalProps> = ({
@@ -28,7 +30,9 @@ const RestockPartModal: React.FC<ModalProps> = ({
   onClose,
   title,
   username,
-  fetchPart
+  fetchPart,
+  setParts,
+  parts,
 }) => {
   const schema = z.object({
     amount: z.number().min(0, { message: "กรุณากรอกจำนวน" }),
@@ -82,6 +86,11 @@ const RestockPartModal: React.FC<ModalProps> = ({
           icon: null,
         });
       }
+      setParts(
+        parts.map((parts) =>
+          parts._id === PartId ? { ...parts, amount: current + data.amount } : parts
+        )
+      )
       fetchPart();
       form.reset();
     } catch (error) {
