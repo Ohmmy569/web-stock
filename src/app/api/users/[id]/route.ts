@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectMongoDB } from "@lib/connectDB";
-import User from "@lib/models/user";
+import UserMember from "@lib/models/user";
 import bcrypt from "bcryptjs";
 
 export async function DELETE(
@@ -10,7 +10,7 @@ export async function DELETE(
   try {
     const { id } = params;
     await connectMongoDB();
-    const user = await User.deleteOne({ _id: id });
+    const user = await UserMember.deleteOne({ _id: id });
     return NextResponse.json(user);
   } catch (error) {
     return NextResponse.json(
@@ -28,7 +28,7 @@ export async function PUT(
     const { id } = params;
     const { email, role } = await req.json();
     await connectMongoDB();
-    const user = await User.findByIdAndUpdate(id, { email, role });
+    const user = await UserMember.findByIdAndUpdate(id, { email, role });
     return NextResponse.json(user);
   } catch (error) {
     return NextResponse.json(
@@ -48,7 +48,7 @@ export async function PATCH(
     const { password } = await req.json();
     const hashedPassword = bcrypt.hashSync(password, 10);
     await connectMongoDB();
-    const user = await User.findByIdAndUpdate(id, { password: hashedPassword });
+    const user = await UserMember.findByIdAndUpdate(id, { password: hashedPassword });
     return NextResponse.json(user);
 
     }

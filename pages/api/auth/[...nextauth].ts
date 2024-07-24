@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import { connectMongoDB } from "@lib/connectDB";
-import User from "@lib/models/user";
+import UserMember from "@lib/models/user";
 import { NextApiRequest, NextApiResponse } from "next";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -24,7 +24,7 @@ export const authOptions = {
           await connectMongoDB();
 
           // Find the user by email
-          const user = await User.findOne({ email: credentials?.email });
+          const user = await UserMember.findOne({ email: credentials?.email });
 
           // If user does not exist
 

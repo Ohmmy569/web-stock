@@ -2,21 +2,21 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { connectMongoDB } from "@lib/connectDB";
-import User from "@lib/models/user";
+import UserMember from "@lib/models/user";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
+    const { email, password , role } = await req.json();
     
     const hashedPassword = bcrypt.hashSync(password, 10) ;
 
     await connectMongoDB();
-    const user = await User.findOne({ email });
+    const user = await UserMember.findOne({ email });
     if (user) {
       return NextResponse.json({ message: "User already exists." }, { status: 400 });
     }
-    await User.create({ email, password: hashedPassword });
+    await UserMember.create({ email, password: hashedPassword , role });
 
     return NextResponse.json({ message: "User registered." }, { status: 201 });
   } catch (error) {
