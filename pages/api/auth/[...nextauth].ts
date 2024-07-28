@@ -1,11 +1,8 @@
 import NextAuth from "next-auth";
 import { connectMongoDB } from "@lib/connectDB";
 import UserMember from "@lib/models/user";
-import { NextApiRequest, NextApiResponse } from "next";
-import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { Session } from "inspector";
 
 export const authOptions = {
   pages: {

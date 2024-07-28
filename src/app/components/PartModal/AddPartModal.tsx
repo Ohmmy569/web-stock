@@ -16,7 +16,9 @@ import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 
-import { Car , Part } from "@/app/type";
+import { Car, Part } from "@/app/type";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 interface ModalProps {
   opened: boolean;
@@ -27,8 +29,6 @@ interface ModalProps {
   carBrand: string[];
   Cars: Car[] | undefined;
   Code: string[] | undefined;
-  fetchPart: () => void;
-  setParts: (value: any[]) => void;
   parts: Part[];
 }
 
@@ -45,9 +45,6 @@ const AddPartModal: React.FC<ModalProps> = ({
   carBrand,
   Cars,
   Code,
-  fetchPart,
-  setParts,
-  parts,
 }) => {
   const [CarModel, setCarModel] = useState<string[]>([]);
   const [selectedBrand, setSelectedBrand] = useState<string>("");
@@ -56,6 +53,9 @@ const AddPartModal: React.FC<ModalProps> = ({
   const CodeName = Code || [];
   const CarBrand = carBrand || [];
   const TypeofPart = typeofPart || [];
+  //remove 0 index
+  CarBrand.shift();
+  TypeofPart.shift();
 
   const schema = z.object({
     code: z
@@ -102,79 +102,75 @@ const AddPartModal: React.FC<ModalProps> = ({
     validate: zodResolver(schema),
   });
 
+  const [Scode, setScode] = useState("");
+  const [Sname, setSname] = useState("");
+  const [StypeofPart, setStypeofPart] = useState("");
+  const [Sbrand, setSbrand] = useState("");
+  const [Smodel, setSmodel] = useState("");
+  const [ScostPrice, setScostPrice] = useState(0);
+  const [SsalePrice, setSsalePrice] = useState(0);
+
   useEffect(() => {
     if (selectedBrand) {
       const filteredModels =
         Cars?.filter((car) => car.brand === selectedBrand).map(
           (car) => car.name
         ) || [];
-      //append value "all" to the beginning of the array
+
       setCarModel(removeDuplicates(["ใช้ได้ทุกรุ่น", ...filteredModels]));
     } else {
       setCarModel([]);
     }
   }, [selectedBrand, Cars]);
 
-  const handlesubmit = async (data: any) => {
-    try {
-      let model = "";
-      if (data.model.length > 1) {
-        model = data.model.join(" , ");
-      } else {
-        model = data.model[0];
-      }
-
-      const res = await fetch("/api/parts", {
-        method: "POST",
-        body: JSON.stringify({
-          code: data.code,
-          name: data.name,
-          type: data.typeofPart,
-          brand: data.brand,
-          model: model,
-          costPrice: data.costPrice,
-          sellPrice: data.salePrice,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+  const queryClient = useQueryClient();
+  const addMutation = useMutation({
+    mutationFn: async () => {
+      const res = await axios.post("/api/parts", {
+        code: Scode,
+        name: Sname,
+        type: StypeofPart,
+        brand: Sbrand,
+        model: Smodel,
+        costPrice: ScostPrice,
+        sellPrice: SsalePrice,
       });
-      if (res.ok) {
-        showNotification({
-          title: "เพิ่มอ่ะไหล่สำเร็จ",
-          message: "เพิ่มอ่ะไหล่ " + data.name + " สำเร็จ",
-          color: "green",
-          icon: null,
-        });
-        setParts([...parts, {
-          id: parts.length + 1,
-          code: data.code,
-          name: data.name,
-          type: data.typeofPart,
-          brand: data.brand,
-          model: model,
-          costPrice: data.costPrice,
-          sellPrice: data.salePrice,
-        }]);
-        fetchPart();
-      } else {
-        showNotification({
-          title: "เพิ่มอ่ะไหล่ไม่สำเร็จ",
-          message: "เกิดข้อผิดพลาดระหว่างเพิ่มอ่ะไหล่",
-          color: "red",
-          icon: null,
-        });
-      }
-
-      form.reset();
-    } catch (error) {
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["parts"] });
       showNotification({
-        title: "เพิ่มอ่ะไหล่ไม่สำเร็จ",
-        message: "เกิดข้อผิดพลาดระหว่างเพิ่มอ่ะไหล่" + error,
+        title: "เพิ่มอ่ะไหล่สำเร็จ",
+        message: "เพิ่มอ่ะไหล่เรียบร้อย",
+        color: "green",
+        icon: null,
+      });
+    },
+    onError: () => {
+      showNotification({
+        title: "เพิ่มอ่ไหล่ไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดระหว่างเพิ่มอ่ะไหล่",
         color: "red",
         icon: null,
       });
+    },
+  });
+
+  const handlesubmit = async (data: any) => {
+    let model = "";
+    if (data.model.length > 1) {
+      model = data.model.join(" , ");
+    } else {
+      model = data.model[0];
     }
+
+    setScode(data.code);
+    setSname(data.name);
+    setStypeofPart(data.typeofPart);
+    setSbrand(data.brand);
+    setSmodel(model);
+    setScostPrice(data.costPrice);
+    setSsalePrice(data.salePrice);
+    addMutation.mutate();
   };
 
   return (
@@ -183,15 +179,16 @@ const AddPartModal: React.FC<ModalProps> = ({
         onSubmit={(event) => {
           event.preventDefault();
           form.onSubmit((data) => {
+            console.log("data", data);
             handlesubmit(data);
-            form.reset();
             onClose();
+            form.reset();
           })();
         }}
       >
         <Box>
           <TextInput
-            label="รหัสอ่ะไหล่"
+            label="รหัสอ่ะไหล่sssssssssss"
             placeholder="กรอกรหัสอ่ะไหล่"
             mb={"xs"}
             {...form.getInputProps("code")}
@@ -205,17 +202,15 @@ const AddPartModal: React.FC<ModalProps> = ({
           <Select
             label="ประเภทอ่ะไหล่"
             placeholder="เลือกประเภทอ่ะไหล่"
-            data={[...TypeofPart.map((type) => ({ label: type, value: type }))]}
-            {...form.getInputProps("typeofPart")}
+            data={typeofPart}
             mb={"xs"}
+            {...form.getInputProps("typeofPart")}
             searchable
           />
 
           <Select
             placeholder="เลือกยี่ห้อรถยนต์"
-            data={[
-              ...CarBrand.map((brand) => ({ label: brand, value: brand })),
-            ]}
+            data={carBrand}
             label="เลือกยี่ห้อรถยนต์"
             {...form.getInputProps("brand")}
             onChange={(value) => {
@@ -250,7 +245,7 @@ const AddPartModal: React.FC<ModalProps> = ({
           />
           <Center>
             <Group justify="space-between" mt={15}>
-              <Button color="green" mt="md" type="submit">
+              <Button color="green" mt="md" type="submit" >
                 เพิ่มอ่ะไหล่
               </Button>
               <Button color="red" mt="md" onClick={onClose}>

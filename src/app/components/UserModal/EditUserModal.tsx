@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Box,
@@ -15,6 +15,8 @@ import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 
 import { User } from "@/app/type";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 interface ModalProps {
   opened: boolean;
@@ -22,8 +24,6 @@ interface ModalProps {
   title: React.ReactNode;
   users: User;
   Nameusers: string[] | undefined;
-  fetchUser : () => void;
-  setUsers : (value : any[]) => void;
   Users : User[];
 }
 
@@ -33,10 +33,11 @@ const EditUserModal: React.FC<ModalProps> = ({
   title,
   users,
   Nameusers,
-  fetchUser,
-  setUsers,
   Users
 }) => {
+  const [Email, setEmail] = useState("");
+  const [Role, setRole] = useState("");
+  const [id , setId] = useState("");
   const schema = z.object({
     username: z
       .string()
@@ -80,44 +81,35 @@ const EditUserModal: React.FC<ModalProps> = ({
     form.reset();
   }
 
-  
-
-  const handlesubmit = async (data: any , UserId : string) => {
-    try {
-      const res = await fetch(`/api/users/${UserId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-          {
-            email: data.username,
-            role: data.role,
-          }
-        ),
+  const queryClient = useQueryClient();
+  const editMutation = useMutation({
+    mutationFn: async () => {
+      const res = await axios.put(`/api/users/${id}`, {
+        email: Email,
+        role: Role,
       });
-      if(res.ok){
-        showNotification({
-          title: "แก้ไขผู้ใช้งานสำเร็จ",
-          message: "แก้ไขผู้ใช้งานสำเร็จ",
-          color: "green",
-        });
-        fetchUser();
-        setUsers(
-          Users.map((user) =>
-            user._id === UserId ? { ...user, email: data.username , role: data.role } : user
-          )
-        )
-        onClose();
-      }
-    } catch (error: any) {
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       showNotification({
-        title: "เพิ่มผู้ใช้งานไม่สำเร็จ",
-        message: error.message,
+        title: "แก้ไขผู้ใช้งานสำเร็จ",
+        message: "แก้ไขผู้ใช้งาน " + Email + " สำเร็จ",
+        color: "green",
+      });
+    },
+    onError: () => {
+      showNotification({
+        title: "แก้ไขผู้ใช้งานไม่สำเร็จ",
+        message: "แก้ไขผู้ใช้งานไม่สำเร็จ",
         color: "red",
       });
-      onClose();
-    }
+    },
+  })
+
+  const handlesubmit = async (data: any , UserId : string) => {
+    setEmail(data.username);
+    setRole(data.role);
+    setId(UserId);
   };
   return (
     <Modal opened={opened} onClose={onClosed} title={title} centered>
@@ -126,6 +118,7 @@ const EditUserModal: React.FC<ModalProps> = ({
           event.preventDefault();
           form.onSubmit((data) => {
             handlesubmit(data , users._id);
+            editMutation.mutate();
             onClose();
             form.reset();
           })();

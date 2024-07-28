@@ -1,25 +1,22 @@
 //layout.tsx
-
+"use client";
 import "@mantine/core/styles.css";
 import React from "react";
 
-import {
-  MantineProvider,
-  ColorSchemeScript,
-  createTheme,
-  Container,
-} from "@mantine/core";
+import { MantineProvider, ColorSchemeScript, createTheme } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
+
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 
 import "@mantine/core/styles.css";
 import "@mantine/dropzone/styles.css";
 import "@mantine/notifications/styles.css";
 import SessionProvider from "./SessionProvider";
 
-export const metadata = {
-  title: "AP-Stock",
-};
 
 const theme = createTheme({
   primaryColor: "myblue",
@@ -54,6 +51,7 @@ const theme = createTheme({
     ],
   },
 });
+const queryClient = new QueryClient();
 
 export default function RootLayout({ children }: { children: any }) {
   return (
@@ -65,6 +63,7 @@ export default function RootLayout({ children }: { children: any }) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
         />
+          <title>Ap-Stock</title>
       </head>
       <body
         style={{
@@ -74,7 +73,11 @@ export default function RootLayout({ children }: { children: any }) {
         <SessionProvider>
           <MantineProvider theme={theme} defaultColorScheme="light">
             <Notifications />
-            <ModalsProvider>{children}</ModalsProvider>
+            <ModalsProvider>
+              <QueryClientProvider client={queryClient}>
+                {children}
+              </QueryClientProvider>
+            </ModalsProvider>
           </MantineProvider>
         </SessionProvider>
       </body>

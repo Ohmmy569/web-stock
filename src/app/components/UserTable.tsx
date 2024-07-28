@@ -1,13 +1,18 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import {
   ActionIcon,
+  Box,
   Button,
   Card,
+  Center,
   Grid,
   Group,
+  Loader,
   Menu,
   Paper,
   rem,
+  Space,
   Stack,
   Table,
   Text,
@@ -22,6 +27,7 @@ import {
   IconRefresh,
   IconPassword,
   IconDotsVertical,
+  IconExclamationCircle,
 } from "@tabler/icons-react";
 import { User } from "../type";
 import { useDisclosure } from "@mantine/hooks";
@@ -31,7 +37,9 @@ import EditUserModal from "@components/UserModal/EditUserModal";
 import NewPassModal from "@components/UserModal/NewPasswordModal";
 import { modals } from "@mantine/modals";
 import { showNotification } from "@mantine/notifications";
-
+import { UseUser } from "../hooks/useUser";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 
 const UserTable = (props: any) => {
   let mobile = props.matches;
@@ -50,42 +58,13 @@ const UserTable = (props: any) => {
   );
   const nameEmail = users?.map((user: User) => user.email) as string[];
 
-  const fetchUser = async () => {
-    try {
-      const res = await fetch("/api/users", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if(!res.ok) {
-        showNotification({
-          title: "เรียกข้อมูลผู้ใช้งานไม่สำเร็จ",
-          message: "เกิดข้อผิดพลาดในการเรียกข้อมูลผู้ใช้งาน",
-          color: "red",
-        });
-        return; 
-      }
-      const data = await res.json();
-      setUsers(data);
-    } catch (error: any) {
-      showNotification({
-        title: "เรียกข้อมูลผู้ใช้งานไม่สำเร็จ",
-        message: error.message,
-        color: "red",
-      });
-    }
-  };
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
+  const { data, isLoading, isError, refetch } = UseUser();
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
   };
 
-  const filteredUsers = users?.filter((user: User) =>
+  const filteredUsers = data?.filter((user: User) =>
     Object.values(user).some(
       (value) =>
         typeof value === "string" &&
@@ -113,15 +92,6 @@ const UserTable = (props: any) => {
       <Table.Td ta="center">{user.role}</Table.Td>
       <Table.Td ta="center">
         <Group gap={"xs"}>
-          <Tooltip label="เปลี่ยนรหัสผ่าน">
-            <ActionIcon
-              variant="filled"
-              color="blue.8"
-              onClick={() => OpenPass(user)}
-            >
-              <IconPassword />
-            </ActionIcon>
-          </Tooltip>
           <Tooltip label="แก้ไข">
             <ActionIcon
               variant="filled"
@@ -131,6 +101,7 @@ const UserTable = (props: any) => {
               <IconEdit />
             </ActionIcon>
           </Tooltip>
+
           <Tooltip label="ลบ">
             <ActionIcon
               variant="filled"
@@ -141,34 +112,45 @@ const UserTable = (props: any) => {
               <IconTrash />
             </ActionIcon>
           </Tooltip>
+
+          <Tooltip label="เปลี่ยนรหัสผ่าน">
+            <ActionIcon
+              variant="filled"
+              color="blue.8"
+              onClick={() => OpenPass(user)}
+            >
+              <IconPassword />
+            </ActionIcon>
+          </Tooltip>
         </Group>
       </Table.Td>
     </Table.Tr>
   ));
+  const [Uname , setUname] = useState("");
 
-  async function removeUser(UserId: any, Username: any) {
-    try {
-      await fetch(`/api/users/${UserId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: "no-store",
-      });
+  const deleteMutation = useMutation({
+    mutationFn: async (id: any) => {
+      await axios.delete(`/api/users/${id}`);
+    },
+    onSuccess: () => {
       showNotification({
         title: "ลบบัญชีผู้ใช้งานสำเร็จ",
-        message: "ลบบัญชีผู้ใช้ " + UserId + " แล้ว",
+        message: "ลบบัญชีผู้ใช้ " + Uname + " แล้ว",
         color: "green",
       });
-      fetchUser();
-      setUsers(users?.filter((user) => user._id !== UserId));
-    } catch (error: any) {
+    },
+    onError: () => {
       showNotification({
         title: "ลบบัญชีผู้ใช้งานไม่สำเร็จ",
-        message: error.message,
+        message: "ลบบัญชีผู้ใช้ " + Uname + " ไม่สำเร็จ",
         color: "red",
       });
-    }
+    },
+  });
+
+  async function removeUser(UserId: any , Username: any) {
+    deleteMutation.mutate(UserId);
+    setUname(Username);
   }
 
   const openDeleteModal = (UserId: any, Username: any) => {
@@ -184,7 +166,7 @@ const UserTable = (props: any) => {
       confirmProps: { color: "red" },
       onCancel: () => onclose,
       onConfirm: () => {
-        removeUser(UserId, Username);
+        removeUser(UserId , Username);
         onclose;
       },
     });
@@ -274,7 +256,7 @@ const UserTable = (props: any) => {
                 <ActionIcon
                   variant="filled"
                   color="blue"
-                  onClick={fetchUser}
+                  onClick={() => refetch()}
                   size="lg"
                 >
                   <IconRefresh />
@@ -312,24 +294,53 @@ const UserTable = (props: any) => {
             <Text>&nbsp;</Text>
           </Group>
 
-          <Paper shadow="sm" radius="md" p={"sm"} withBorder>
-            <Table
-              highlightOnHover
-              stickyHeader
-              striped
-              stickyHeaderOffset={55}
-            >
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th ta="center">ชื่อผู้ใช้</Table.Th>
-                  <Table.Th ta="center">เวลาที่สร้าง</Table.Th>
-                  <Table.Th ta="center">บทบาท</Table.Th>
-                  <Table.Th ta="center"> </Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>{rows}</Table.Tbody>
-            </Table>
-          </Paper>
+          {isLoading ? (
+            <>
+              <Center mt={"8%"}>
+                <Loader color="green" size={"xl"} />
+              </Center>
+              <Center>
+                <Space h="md" />
+                <Text fw={700}>กำลังโหลดข้อมูล</Text>
+              </Center>
+            </>
+          ) : isError ? (
+            <>
+              <Center mt={"8%"}>
+                <IconExclamationCircle size={50} color="red" />
+              </Center>
+              <Center>
+                <Text fw={700}>เกิดข้อผิดพลาดในการเรียกข้อมูล</Text>
+              </Center>
+
+              <Center>
+                <Button variant="filled" radius="md" onClick={() => refetch()}>
+                  ลองอีกครั้ง
+                </Button>
+              </Center>
+            </>
+          ) : (
+            <>
+              <Paper shadow="sm" radius="md" p={"sm"} withBorder>
+                <Table
+                  highlightOnHover
+                  stickyHeader
+                  striped
+                  stickyHeaderOffset={55}
+                >
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th ta="center">ชื่อผู้ใช้</Table.Th>
+                      <Table.Th ta="center">เวลาที่สร้าง</Table.Th>
+                      <Table.Th ta="center">บทบาท</Table.Th>
+                      <Table.Th ta="center"> </Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>{rows}</Table.Tbody>
+                </Table>
+              </Paper>
+            </>
+          )}
         </>
       ) : (
         <>
@@ -345,7 +356,7 @@ const UserTable = (props: any) => {
                 <ActionIcon
                   variant="filled"
                   color="blue"
-                  onClick={fetchUser}
+                  onClick={() => refetch()}
                   size="1.855rem"
                 >
                   <IconRefresh size={"1.3rem"} />
@@ -379,17 +390,42 @@ const UserTable = (props: any) => {
               onChange={handleSearchChange}
             />
           </Group>
-          <Stack gap={"xs"}> {mobileRows}</Stack>
+          {isLoading ? (
+            <>
+               <Center mt={"30%"}>
+                <Loader color="green" size={"xl"} />
+              </Center>
+              <Center>
+                <Space h="md" />
+                <Text fw={700}>กำลังโหลดข้อมูล</Text>
+              </Center>
+            </>
+          ) : isError ? (
+            <>
+            <Center mt={"30%"}>
+              <IconExclamationCircle size={50} color="red" />
+            </Center>
+            <Center>
+              <Text fw={700}>เกิดข้อผิดพลาดในการเรียกข้อมูล</Text>
+            </Center>
+
+            <Center>
+              <Button variant="filled" radius="md" onClick={() => refetch()}>
+                ลองอีกครั้ง
+              </Button>
+            </Center>
+          </>
+          ) : (
+            <Stack gap={"xs"}> {mobileRows}</Stack>
+          )}
         </>
       )}
+
       <AddUserModal
         opened={Addopened}
         onClose={closeAdd}
         title={<Text fw={900}> เพิ่มผู้ใช้งาน </Text>}
         Nameusers={nameEmail}
-        fetchUser={fetchUser}
-        Users={users as User[]}
-        setUsers={setUsers}
       />
 
       <EditUserModal
@@ -398,8 +434,6 @@ const UserTable = (props: any) => {
         title={<Text fw={900}> แก้ไขผู้ใช้งาน </Text>}
         users={editUser}
         Nameusers={editNameEmail}
-        fetchUser={fetchUser}
-        setUsers={setUsers}
         Users={users as User[]}
       />
 

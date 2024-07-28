@@ -14,15 +14,15 @@ import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 import { User } from "@/app/type";
+import { useMutation , useQueryClient} from "@tanstack/react-query";
+import { useState } from "react";
+import axios from "axios";
 
 interface ModalProps {
   opened: boolean;
   onClose: () => void;
   title: React.ReactNode;
   Nameusers: string[];
-  fetchUser: () => void;
-  Users : User[];
-  setUsers : (value : any[]) => void;
 }
 
 const AddUserModal: React.FC<ModalProps> = ({
@@ -30,36 +30,41 @@ const AddUserModal: React.FC<ModalProps> = ({
   onClose,
   title,
   Nameusers,
-  fetchUser,
-  Users,
-  setUsers
+
 }) => {
+  const [Email, setEmail] = useState("");
+  const [Role, setRole] = useState("");
+  const [Password, setPassword] = useState("");
   const NameUsers = Nameusers || [];
-  const schema = z.object({
-    username: z.string()
-    .nonempty({ message: "กรุณากรอกชื่อผู้ใช้งาน" })
-    .refine((value) => {
-      if(NameUsers.includes(value + "@gmail.com")){
-        return false;
-        }
-        return true;
-        }, { message: "มีผู้ใช้งานนี้อยู่แล้ว" }),
-    password: z
-      .string()
-      .nonempty({ message: "กรุณากรอกรหัสผ่าน" })
-      .min(6, { message: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" }),
-    confirm_password: z
-      .string()
-      .nonempty({ message: "กรุณายืนยันรหัสผ่าน" })
-      .min(6, { message: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" }),
+  const schema = z
+    .object({
+      username: z
+        .string()
+        .nonempty({ message: "กรุณากรอกชื่อผู้ใช้งาน" })
+        .refine(
+          (value) => {
+            if (NameUsers.includes(value + "@gmail.com")) {
+              return false;
+            }
+            return true;
+          },
+          { message: "มีผู้ใช้งานนี้อยู่แล้ว" }
+        ),
+      password: z
+        .string()
+        .nonempty({ message: "กรุณากรอกรหัสผ่าน" })
+        .min(6, { message: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" }),
+      confirm_password: z
+        .string()
+        .nonempty({ message: "กรุณายืนยันรหัสผ่าน" })
+        .min(6, { message: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" }),
 
-    
-
-    role: z.string().nonempty({ message: "กรุณาเลือกสิทธิ์การใช้งาน" }),
-  }).refine((data) => data.password == data.confirm_password, {
-    message: "รหัสผ่านไม่ตรงกัน",
-    path: ["confirm_password"], 
-  });;
+      role: z.string().nonempty({ message: "กรุณาเลือกสิทธิ์การใช้งาน" }),
+    })
+    .refine((data) => data.password == data.confirm_password, {
+      message: "รหัสผ่านไม่ตรงกัน",
+      path: ["confirm_password"],
+    });
 
   const form = useForm({
     initialValues: {
@@ -71,81 +76,41 @@ const AddUserModal: React.FC<ModalProps> = ({
     validate: zodResolver(schema),
   });
 
-  const handlesubmit = async (data: any) => {
-    try {
-      const email = data.username + "@gmail.com";
-      const password = data.password;
-      if (data.password !== data.confirm_password) {
-        showNotification({
-          title: "เพิ่มผู้ใช้งานไม่สำเร็จ",
-          message: "กรุณากรอกรหัสผ่านให้ตรงกัน",
-          color: "red",
-          icon: null,
-        });
-        return;
-      }
-
-      const resCheckUser = await fetch("/api/checkUser", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: email }),
+  const queryClient = useQueryClient();
+  const addMutation = useMutation({
+    mutationFn: async () => {
+      const res = await axios.post("/api/register", {
+        email: Email,
+        password: Password,
+        role: Role,
       });
-
-      const Isuser = await resCheckUser.json();
-
-      if (Isuser === null) {
-        showNotification({
-          title: "เพิ่มผู้ใช้งานไม่สำเร็จ",
-          message: "มีผู้ใช้งานนี้อยู่แล้ว",
-          color: "yellow",
-          icon: null,
-        });
-        return;
-      } else {
-        const res = await fetch("/api/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-            role: data.role,
-          }),
-        });
-
-        if (res.ok) {
-          showNotification({
-            title: "เพิ่มผู้ใช้งานสำเร็จ",
-            message: "เพิ่มผู้ใช้งาน " + data.username + " สำเร็จ",
-            color: "green",
-            icon: null,
-          });
-        } else {
-          showNotification({
-            title: "เพิ่มผู้ใช้งานไม่สำเร็จ",
-            message: "เกิดข้อผิดพลาดระหว่างเพิ่มผู้ใช้งาน",
-            color: "red",
-            icon: null,
-          });
-        }
-  
-        setUsers([...Users, { email, role: data.role }]);
-        fetchUser();
-        onClose();
-      }
-    } catch (error) {
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      showNotification({
+        title: "เพิ่มผู้ใช้งานสำเร็จ",
+        message: "เพิ่มผู้ใช้งานเรียบร้อย",
+        color: "green",
+        icon: null,
+      });
+    },
+    onError: () => {
       showNotification({
         title: "เพิ่มผู้ใช้งานไม่สำเร็จ",
         message: "เกิดข้อผิดพลาดระหว่างเพิ่มผู้ใช้งาน",
         color: "red",
         icon: null,
       });
-      fetchUser();
-    }
+    },
+  });
+
+  const handlesubmit = async (data: any) => {
+    setEmail(data.username + "@gmail.com");
+    setPassword(data.password);
+    setRole(data.role);
+    addMutation.mutate();
   };
+
   return (
     <Modal opened={opened} onClose={onClose} title={title} centered>
       <form
@@ -155,7 +120,6 @@ const AddUserModal: React.FC<ModalProps> = ({
             handlesubmit(data);
             onClose();
             form.reset();
-        
           })();
         }}
       >

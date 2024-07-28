@@ -6,11 +6,13 @@ import {
   Center,
   Grid,
   Group,
+  Loader,
   Menu,
   NumberFormatter,
   Paper,
   rem,
   Select,
+  Space,
   Stack,
   Table,
   Text,
@@ -27,8 +29,9 @@ import {
   IconPlus,
   IconRefresh,
   IconDotsVertical,
+  IconExclamationCircle,
 } from "@tabler/icons-react";
-import { Part, Car } from "../type";
+import { Part, Car, PartType } from "../type";
 import { useSession } from "next-auth/react";
 
 import { useDisclosure } from "@mantine/hooks";
@@ -40,13 +43,16 @@ import OutStockPartModal from "./PartModal/OutStockPart";
 import { modals } from "@mantine/modals";
 import { showNotification } from "@mantine/notifications";
 
+import { UsePart } from "../hooks/usePart";
+import { UsePartType } from "../hooks/useType";
+import { UseBrandCar } from "../hooks/useBrand";
+import { UseCar } from "../hooks/useCar";
+
 const PartTable = (props: any) => {
   let mobile = props.matches;
-  const [Parts, setParts] = useState([] as any[] | undefined);
-  const [Cars, setCars] = useState([] as Car[] | undefined);
-  const [CarBrand, setCarBrand] = useState([] as any[] | undefined);
+
   const [PartCode, setPartCode] = useState([] as any[] | undefined);
-  const [TypeofParts, setTypeofParts] = useState([] as any[] | undefined);
+
   const [search, setSearch] = useState("");
   const [scrolled, setScrolled] = useState(false);
 
@@ -76,99 +82,58 @@ const PartTable = (props: any) => {
   const [checked, setChecked] = useState(false);
   const [checkedIn, setCheckedIn] = useState(false);
 
-  const fetchPart = async () => {
-    try {
-      const resPart = await fetch("/api/parts", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const resType = await fetch("/api/typeofparts", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const resBrand = await fetch("/api/brandcar", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const resCar = await fetch("/api/modelcar", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!resCar.ok) {
-        showNotification({
-          title: "เกิดข้อผิดพลาดในการดึงข้อมูลรุ่นรถยนต์",
-          message: "เกิดข้อผิดพลาดในการดึงข้อมูลรุ่นรถยนต์",
-          color: "red",
-        });
-        return;
-      }
-
-      if (!resBrand.ok) {
-        showNotification({
-          title: "เกิดข้อผิดพลาดในการดึงข้อมูลยี่ห้อรถยนต์",
-          message: "เกิดข้อผิดพลาดในการดึงข้อมูลยี่ห้อรถยนต์",
-          color: "red",
-        });
-        return;
-      }
-
-      if (!resPart.ok) {
-        showNotification({
-          title: "เกิดข้อผิดพลาดในการดึงข้อมูลอ่ะไหล่รถยนต์",
-          message: "เกิดข้อผิดพลาดในการดึงข้อมูลอ่ะไหล่รถยนต์",
-          color: "red",
-        });
-        return;
-      }
-      if (!resType.ok) {
-        showNotification({
-          title: "เกิดข้อผิดพลาดในการดึงข้อมูลประเภทอ่ะไหล่",
-          message: "เกิดข้อผิดพลาดในการดึงข้อมูลประเภทอ่ะไหล่",
-          color: "red",
-        });
-        return;
-      }
-
-      const dataPart = (await resPart.json()) as Part[];
-      const dataType = (await resType.json()) as any[];
-      const dataBrand = (await resBrand.json()) as any[];
-      const dataCar = (await resCar.json()) as Car[];
-
-      setParts(dataPart);
-      setTypeofParts(dataType);
-      setCarBrand(dataBrand);
-      setCars(dataCar);
-    } catch (error: any) {
-      showNotification({
-        title: "เกิดข้อผิดพลาดในการดึงข้อมูลอ่ะไหล่รถยนต์",
-        message: error.message,
-        color: "red",
-      });
-    }
-  };
-
-  useEffect(() => {
-    fetchPart();
-  }, []);
+  const {
+    data: Parts,
+    isLoading: PartLoading,
+    isError: PartError,
+    refetch: fetchPart,
+  } = UsePart();
+  const {
+    data: TypeParts,
+    isLoading: TypeLoading,
+    isError: TypeError,
+    refetch: fetchType,
+  } = UsePartType();
+  const {
+    data: CarBrand,
+    isLoading: BrandLoading,
+    isError: BrandError,
+    refetch: fetchBrand,
+  } = UseBrandCar();
+  const {
+    data: Cars,
+    isLoading: CarLoading,
+    isError: CarError,
+    refetch: fetchCar,
+  } = UseCar();
 
   const ModalCars = Cars;
-  const ModalcarBrand = CarBrand?.map((Brand: any) => Brand.brand) as string[];
   const modalPartName = Parts?.map((Part: Part) => Part.name) as string[];
-  const ModalTypeofParts = TypeofParts?.map(
-    (TypeofPart: any) => TypeofPart.name
-  ) as string[];
+
+  const selectType = [{ label: "ทั้งหมด", value: "all" }];
+  const selectBrand = [{ label: "ทั้งหมด", value: "all" }];
+  const modalSelectType = [] as string[];
+  const modalSelectBrand = [] as string[];
+
+
+  if (CarBrand && TypeParts) {
+    const ModalcarBrand = CarBrand.map(
+      (Brand: any) => Brand.brand
+    ) as string[];
+    const ModalTypeofParts = TypeParts.map(
+      (Type: any) => Type.name
+    ) as string[];
+    
+    ModalcarBrand.map((brand) => {
+      selectBrand.push({ label: brand, value: brand });
+      modalSelectBrand.push(brand);
+    });
+    ModalTypeofParts.map((type) => {
+      selectType.push({ label: type, value: type });
+      modalSelectType.push(type);
+    });
+  }
+
   const modalCode = PartCode;
   let modalEditPartName = Parts?.map((Part: Part) => Part.name) as string[];
   let modalEditPartCode = Parts?.map((Part: Part) => Part.code) as string[];
@@ -243,8 +208,6 @@ const PartTable = (props: any) => {
           message: "ลบรายการอ่ะไหล่ " + Partname + " แล้ว",
           color: "green",
         });
-        fetchPart();
-        setParts(Parts?.filter((Part) => Part._id !== PartId));
       } else {
         showNotification({
           title: "ลบรายการอ่ะไหล่ไม่สำเร็จ",
@@ -285,9 +248,18 @@ const PartTable = (props: any) => {
       <Table.Td ta="center" align="center">
         <NumberFormatter thousandSeparator suffix=" ฿" value={Part.sellPrice} />
       </Table.Td>
-      <Table.Td ta="center" align="center">
-        {Part.amount}
-      </Table.Td>
+
+      {Part.amount === 0 ? (
+        <Table.Td ta="center" align="center" c="red.9" fw={700}>
+          {Part.amount}
+        </Table.Td> ) : (
+        <Table.Td ta="center" align="center" c="green.9" fw={700}>
+          {Part.amount}
+        </Table.Td>
+        )
+      }
+    
+
       <Table.Td ta="center" align="center">
         <Group gap={"xs"}>
           <Tooltip label="แก้ไข">
@@ -443,15 +415,33 @@ const PartTable = (props: any) => {
             />
           </Text>
         </Grid.Col>
-        <Grid.Col span={4}>
-          <Text size="sm">
+        <Grid.Col span={4}>{
+          Part.amount === 0 ? (
+            <Text size="sm" c="red.9" fw={700}>
+              <b>จำนวณ : </b>
+              {Part.amount}
+            </Text>
+          ) : (
+
+          <Text size="sm" c="green.9" fw={700}>
             <b>จำนวณ : </b>
             {Part.amount}
           </Text>
+          )}
         </Grid.Col>
       </Grid>
     </Card>
   ));
+
+  let isLoading = PartLoading || TypeLoading || BrandLoading || CarLoading;
+  let isError = PartError || TypeError || BrandError || CarError;
+  const refetch = () => {
+    
+    fetchPart();
+    fetchType();
+    fetchBrand();
+    fetchCar();
+  };
 
   return (
     <Stack align="stretch" justify="center" gap="md">
@@ -469,9 +459,7 @@ const PartTable = (props: any) => {
                 <ActionIcon
                   variant="filled"
                   color="blue"
-                  onClick={() => {
-                    fetchPart();
-                  }}
+                  onClick={() => {refetch()}}
                   size="lg"
                 >
                   <IconRefresh />
@@ -507,26 +495,14 @@ const PartTable = (props: any) => {
             <Select
               placeholder="เลือกประเภท"
               label="เลือกประเภท"
-              data={[
-                { label: "ทั้งหมด", value: "all" },
-                ...ModalTypeofParts.map((type) => ({
-                  label: type,
-                  value: type,
-                })),
-              ]}
+              data={selectType}
               defaultValue={"all"}
               onChange={(value) => setTypeofparts(value as string)}
               searchable
             />
             <Select
               placeholder="เลือกยี่ห้อรถยนต์"
-              data={[
-                { label: "ทั้งหมด", value: "all" },
-                ...ModalcarBrand.map((brand) => ({
-                  label: brand,
-                  value: brand,
-                })),
-              ]}
+              data={selectBrand}
               label="เลือกยี่ห้อรถยนต์"
               defaultValue={"all"}
               onChange={(value) => setBrand(value as string)}
@@ -556,29 +532,57 @@ const PartTable = (props: any) => {
               searchable
             />
           </Group>
-          <Paper shadow="sm" radius="md" p={"sm"} withBorder>
-            <Table
-              highlightOnHover
-              stickyHeader
-              striped
-              stickyHeaderOffset={55}
-            >
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th ta="center">รหัสบาร์โค๊ด</Table.Th>
-                  <Table.Th ta="center">ชื่อ</Table.Th>
-                  <Table.Th ta="center">ประเภท</Table.Th>
-                  <Table.Th ta="center">ยี่ห้อรถยนต์</Table.Th>
-                  <Table.Th ta="center">รุ่นรถยนต์</Table.Th>
-                  <Table.Th ta="center">ราคาทุน</Table.Th>
-                  <Table.Th ta="center">ราคาขาย</Table.Th>
-                  <Table.Th ta="center">จำนวณ</Table.Th>
-                  <Table.Th ta="center"> </Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>{rows}</Table.Tbody>
-            </Table>
-          </Paper>
+
+          {isLoading ? (
+            <>
+              <Center mt={"8%"}>
+                <Loader color="green" size={"xl"} />
+              </Center>
+              <Center>
+                <Space h="md" />
+                <Text fw={700}>กำลังโหลดข้อมูล</Text>
+              </Center>
+            </>
+          ) : isError ? (
+            <>
+              <Center mt={"8%"}>
+                <IconExclamationCircle size={50} color="red" />
+              </Center>
+              <Center>
+                <Text fw={700}>เกิดข้อผิดพลาดในการเรียกข้อมูล</Text>
+              </Center>
+
+              <Center>
+                <Button variant="filled" radius="md" onClick={() => refetch()}>
+                  ลองอีกครั้ง
+                </Button>
+              </Center>
+            </>
+          ) : (
+            <Paper shadow="sm" radius="md" p={"sm"} withBorder>
+              <Table
+                highlightOnHover
+                stickyHeader
+                striped
+                stickyHeaderOffset={55}
+              >
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th ta="center">รหัสบาร์โค๊ด</Table.Th>
+                    <Table.Th ta="center">ชื่อ</Table.Th>
+                    <Table.Th ta="center">ประเภท</Table.Th>
+                    <Table.Th ta="center">ยี่ห้อรถยนต์</Table.Th>
+                    <Table.Th ta="center">รุ่นรถยนต์</Table.Th>
+                    <Table.Th ta="center">ราคาทุน</Table.Th>
+                    <Table.Th ta="center">ราคาขาย</Table.Th>
+                    <Table.Th ta="center">จำนวณ</Table.Th>
+                    <Table.Th ta="center"> </Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>{rows}</Table.Tbody>
+              </Table>
+            </Paper>
+          )}
         </>
       ) : (
         //------------------------------------------ mobile -------------------------------------------------------
@@ -595,9 +599,7 @@ const PartTable = (props: any) => {
                 <ActionIcon
                   variant="filled"
                   color="blue"
-                  onClick={() => {
-                    fetchPart();
-                  }}
+                  onClick={() => {refetch()}}
                   size="1.855rem"
                 >
                   <IconRefresh size={"1.3rem"} />
@@ -634,13 +636,8 @@ const PartTable = (props: any) => {
             <Select
               placeholder="เลือกประเภท"
               label="เลือกประเภท"
-              data={[
-                { label: "ทั้งหมด", value: "all" },
-                ...ModalTypeofParts.map((type) => ({
-                  label: type,
-                  value: type,
-                })),
-              ]}
+              data={selectType}
+        
               defaultValue={"all"}
               onChange={(value) => setTypeofparts(value as string)}
               searchable
@@ -649,13 +646,7 @@ const PartTable = (props: any) => {
           <Group mt={-10} grow align="center">
             <Select
               placeholder="เลือกยี่ห้อรถยนต์"
-              data={[
-                { label: "ทั้งหมด", value: "all" },
-                ...ModalcarBrand.map((brand) => ({
-                  label: brand,
-                  value: brand,
-                })),
-              ]}
+              data={selectBrand}
               label="เลือกยี่ห้อรถยนต์"
               defaultValue={"all"}
               onChange={(value) => setBrand(value as string)}
@@ -685,7 +676,34 @@ const PartTable = (props: any) => {
               searchable
             />
           </Group>
-          <Stack gap={"xs"}> {mobileRows}</Stack>
+          {isLoading ? (
+            <>
+               <Center mt={"30%"}>
+                <Loader color="green" size={"xl"} />
+              </Center>
+              <Center>
+                <Space h="md" />
+                <Text fw={700}>กำลังโหลดข้อมูล</Text>
+              </Center>
+            </>
+          ) : isError ? (
+            <>
+            <Center mt={"30%"}>
+              <IconExclamationCircle size={50} color="red" />
+            </Center>
+            <Center>
+              <Text fw={700}>เกิดข้อผิดพลาดในการเรียกข้อมูล</Text>
+            </Center>
+
+            <Center>
+              <Button variant="filled" radius="md" onClick={() => refetch()}>
+                ลองอีกครั้ง
+              </Button>
+            </Center>
+          </>
+          ) : (
+            <Stack gap={"xs"}> {mobileRows}</Stack>
+          )}
         </>
       )}
 
@@ -694,15 +712,13 @@ const PartTable = (props: any) => {
         onClose={closeAdd}
         title={<Text fw={900}> เพิ่มรายการอะไหล่ใหม่ </Text>}
         partName={modalPartName}
-        typeofPart={ModalTypeofParts}
-        carBrand={ModalcarBrand}
+        typeofPart={modalSelectType}
+        carBrand={modalSelectBrand}
         Cars={ModalCars}
         Code={modalCode}
-        fetchPart={fetchPart}
-        setParts={setParts}
         parts={Parts as Part[]}
       />
-
+ 
       <EditPartModal
         opened={Editopened}
         onClose={closeEdit}
@@ -716,12 +732,12 @@ const PartTable = (props: any) => {
         EditPart={editPart}
         partName={EditPartName}
         partCode={EditPartCode}
-        typeofPart={ModalTypeofParts}
-        carBrand={ModalcarBrand}
+        typeofPart={modalSelectType}
+        carBrand={modalSelectBrand}
         Cars={ModalCars}
-        fetchPart={fetchPart}
-        setParts={setParts}
+
       />
+           {/* 
       <RestockPartModal
         opened={Restockopened}
         onClose={closeRestock}
@@ -741,7 +757,7 @@ const PartTable = (props: any) => {
         fetchPart={fetchPart}
         setParts={setParts}
         parts={Parts as Part[]}
-      />
+      /> */}
     </Stack>
   );
 };

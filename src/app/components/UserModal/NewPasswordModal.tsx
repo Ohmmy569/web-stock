@@ -10,6 +10,7 @@ import {
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
+import axios from "axios";
 
 import { User } from "@/app/type";
 
@@ -50,14 +51,10 @@ const NewPassModal: React.FC<ModalProps> = ({
 
   const handlesubmit = async (data: any, UserId: string) => {
     try {
-        const res = await fetch(`/api/users/${UserId}`, {
-        method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ password: data.password }),
-            });
-        if(res.ok){
+        const res = await axios.put(`/api/users/${UserId}`, {
+            password: data.password,
+        });
+        if(res.status === 200){
             showNotification({
                 title: "เปลี่ยนรหัสผ่านสำเร็จ",
                 message: `เปลี่ยนรหัสผ่านสำเร็จ`,

@@ -73,8 +73,6 @@ export default function DashboardLayout({
     router.push(data[index].link);
     event.preventDefault();
     close();
-
-    console.log("asdasd")
   };
 
   const pathname = usePathname();

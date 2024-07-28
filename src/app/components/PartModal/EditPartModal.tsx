@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 
-
 import {
   Box,
   Button,
@@ -17,6 +16,8 @@ import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 import { Car, Part } from "@/app/type";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 interface ModalProps {
   opened: boolean;
@@ -28,8 +29,6 @@ interface ModalProps {
   carBrand: string[];
   Cars: Car[] | undefined;
   EditPart: Part;
-  fetchPart : () => void;
-  setParts : (value : any[]) => void;
   parts: Part[];
 }
 
@@ -47,14 +46,10 @@ const EditPartModal: React.FC<ModalProps> = ({
   Cars,
   EditPart,
   partCode,
-  fetchPart,
-  setParts,
-  parts
+  parts,
 }) => {
   const [CarModel, setCarModel] = useState<string[]>([]);
-  const [selectedBrand, setSelectedBrand] = useState<string>(
-    ""
-  );
+  const [selectedBrand, setSelectedBrand] = useState<string>("");
 
   const PartName = partName || [];
   const CarBrand = carBrand || [];
@@ -80,9 +75,9 @@ const EditPartModal: React.FC<ModalProps> = ({
       .refine(
         (value) => {
           if (PartName.includes(value)) {
-            return false; // Invalid if the name already exists in Partname
+            return false;
           }
-          return true; // Valid if the name doesn't exist in Partname
+          return true;
         },
         { message: "ชื่ออ่ะไหล่ซ้ำ" }
       ),
@@ -129,61 +124,65 @@ const EditPartModal: React.FC<ModalProps> = ({
     setSelectedBrand(EditPart?.brand || "");
   }, [EditPart]);
 
-  const handlesubmit = async (data: any , PartId : any) => {
-    try {
-      if (PartName.includes(data.name)) {
-        showNotification({
-          title: "ชื่ออ่ะไหล่ซ้ำ",
-          message: "กรุณากรอกชื่ออ่ะไหล่ใหม่",
-          color: "red",
-          icon: null,
-        });
-        return;
-      }
-      let model = "";
-      if (data.model.length > 1) {
-        model = data.model.join(" , ");
-      } else {
-        model = data.model[0];
-      }
+  const [Scode, setScode] = useState("");
+  const [Sname, setSname] = useState("");
+  const [StypeofPart, setStypeofPart] = useState("");
+  const [Sbrand, setSbrand] = useState("");
+  const [Smodel, setSmodel] = useState("");
+  const [ScostPrice, setScostPrice] = useState(0);
+  const [SsalePrice, setSsalePrice] = useState(0);
+  const [id, setId] = useState("");
 
-      const res = await fetch(`/api/parts/${PartId}`,{
-        method: "PUT",
-        body: JSON.stringify({
-          code: data.code,
-          name: data.name,
-          type: data.typeofPart,
-          brand: data.brand,
-          model: model,
-          costPrice: data.costPrice,
-          sellPrice: data.sellPrice,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
+  const queryClient = useQueryClient();
+  const EditMutation = useMutation({
+    mutationFn: async () => {
+      const res = await axios.put(`/api/parts/${id}`, {
+        code: Scode,
+        name: Sname,
+        type: StypeofPart,
+        brand: Sbrand,
+        model: Smodel,
+        costPrice: ScostPrice,
+        sellPrice: SsalePrice,
       });
-      
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["parts"] });
       showNotification({
-        title: "แก้ไขอ่ะไหล่สำเร็จ",
-        message: "แก้ไขอ่ะไหล่สำเร็จ " + data.name + " สำเร็จ",
+        title: "เพิ่มอ่ะไหล่สำเร็จ",
+        message: "เพิ่มอ่ะไหล่เรียบร้อย",
         color: "green",
         icon: null,
       });
-      form.reset();
-      setParts(
-        parts.map((parts) =>
-          parts._id === PartId ? { ...parts, code: data.code , name: data.name , type: data.typeofPart , brand: data.brand , model: model , costPrice: data.costPrice , sellPrice: data.salePrice } : parts
-        )
-      )
-      fetchPart();
-    } catch (error) {
+    },
+    onError: () => {
       showNotification({
-        title: "แก้ไขอ่ะไหล่ไม่สำเร็จ",
-        message: "เกิดข้อผิดพลาดระหว่างแก้ไขอ่ะไหล่",
+        title: "เพิ่มอ่ไหล่ไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดระหว่างเพิ่มอ่ะไหล่",
         color: "red",
         icon: null,
       });
+    },
+  });
+
+  const handlesubmit = async (data: any, PartId: any) => {
+    let model = "";
+    if (data.model.length > 1) {
+      model = data.model.join(" , ");
+    } else {
+      model = data.model[0];
     }
+
+    setId(PartId);
+    setScode(data.code);
+    setSname(data.name);
+    setStypeofPart(data.typeofPart);
+    setSbrand(data.brand);
+    setSmodel(model);
+    setScostPrice(data.costPrice);
+    setSsalePrice(data.salePrice);
+
+    EditMutation.mutate();
   };
 
   return (
@@ -192,7 +191,7 @@ const EditPartModal: React.FC<ModalProps> = ({
         onSubmit={(event) => {
           event.preventDefault();
           form.onSubmit((data) => {
-            handlesubmit(data , EditPart._id);
+            handlesubmit(data, EditPart._id);
             form.reset();
             onClose();
           })();
