@@ -1,8 +1,7 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActionIcon,
-  Box,
   Button,
   Card,
   Center,
@@ -38,7 +37,7 @@ import NewPassModal from "@components/UserModal/NewPasswordModal";
 import { modals } from "@mantine/modals";
 import { showNotification } from "@mantine/notifications";
 import { UseUser } from "../hooks/useUser";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
 const UserTable = (props: any) => {
@@ -126,8 +125,8 @@ const UserTable = (props: any) => {
       </Table.Td>
     </Table.Tr>
   ));
-  const [Uname , setUname] = useState("");
-
+  const [Uname, setUname] = useState("");
+  const queryClient = useQueryClient();
   const deleteMutation = useMutation({
     mutationFn: async (id: any) => {
       await axios.delete(`/api/users/${id}`);
@@ -138,6 +137,7 @@ const UserTable = (props: any) => {
         message: "ลบบัญชีผู้ใช้ " + Uname + " แล้ว",
         color: "green",
       });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: () => {
       showNotification({
@@ -148,7 +148,7 @@ const UserTable = (props: any) => {
     },
   });
 
-  async function removeUser(UserId: any , Username: any) {
+  async function removeUser(UserId: any, Username: any) {
     deleteMutation.mutate(UserId);
     setUname(Username);
   }
@@ -166,7 +166,7 @@ const UserTable = (props: any) => {
       confirmProps: { color: "red" },
       onCancel: () => onclose,
       onConfirm: () => {
-        removeUser(UserId , Username);
+        removeUser(UserId, Username);
         onclose;
       },
     });
@@ -392,7 +392,7 @@ const UserTable = (props: any) => {
           </Group>
           {isLoading ? (
             <>
-               <Center mt={"30%"}>
+              <Center mt={"30%"}>
                 <Loader color="green" size={"xl"} />
               </Center>
               <Center>
@@ -402,19 +402,19 @@ const UserTable = (props: any) => {
             </>
           ) : isError ? (
             <>
-            <Center mt={"30%"}>
-              <IconExclamationCircle size={50} color="red" />
-            </Center>
-            <Center>
-              <Text fw={700}>เกิดข้อผิดพลาดในการเรียกข้อมูล</Text>
-            </Center>
+              <Center mt={"30%"}>
+                <IconExclamationCircle size={50} color="red" />
+              </Center>
+              <Center>
+                <Text fw={700}>เกิดข้อผิดพลาดในการเรียกข้อมูล</Text>
+              </Center>
 
-            <Center>
-              <Button variant="filled" radius="md" onClick={() => refetch()}>
-                ลองอีกครั้ง
-              </Button>
-            </Center>
-          </>
+              <Center>
+                <Button variant="filled" radius="md" onClick={() => refetch()}>
+                  ลองอีกครั้ง
+                </Button>
+              </Center>
+            </>
           ) : (
             <Stack gap={"xs"}> {mobileRows}</Stack>
           )}

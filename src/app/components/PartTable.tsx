@@ -47,6 +47,8 @@ import { UsePart } from "../hooks/usePart";
 import { UsePartType } from "../hooks/useType";
 import { UseBrandCar } from "../hooks/useBrand";
 import { UseCar } from "../hooks/useCar";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 const PartTable = (props: any) => {
   let mobile = props.matches;
@@ -115,15 +117,12 @@ const PartTable = (props: any) => {
   const modalSelectType = [] as string[];
   const modalSelectBrand = [] as string[];
 
-
   if (CarBrand && TypeParts) {
-    const ModalcarBrand = CarBrand.map(
-      (Brand: any) => Brand.brand
-    ) as string[];
+    const ModalcarBrand = CarBrand.map((Brand: any) => Brand.brand) as string[];
     const ModalTypeofParts = TypeParts.map(
       (Type: any) => Type.name
     ) as string[];
-    
+
     ModalcarBrand.map((brand) => {
       selectBrand.push({ label: brand, value: brand });
       modalSelectBrand.push(brand);
@@ -174,6 +173,29 @@ const PartTable = (props: any) => {
     openOutStock();
   }
 
+  const [delPart , setDelPart] = useState<Part>({} as Part);
+  const queryClient = useQueryClient();
+  const deleteMutation = useMutation({
+    mutationFn: async (id: any) => {
+      await axios.delete(`/api/parts/${id}`);
+    },
+    onSuccess: () => {
+      showNotification({
+        title: "ลบรายการอ่ะไหล่สำเร็จ",
+        message: "ลบรายการ "+ delPart + " แล้ว",
+        color: "green",
+      });
+      queryClient.invalidateQueries({ queryKey: ["parts"] });
+    },
+    onError: () => {
+      showNotification({
+        title: "ลบรายการอ่ะไหล่ไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดในการลบรายการอ่ะไหล่",
+        color: "red",
+      });
+    },
+  });
+
   const openDeleteModal = (PartId: any, Partname: any) => {
     modals.openConfirmModal({
       title: <Text fw={900}> ลบรายการอ่ะไหล่ </Text>,
@@ -194,34 +216,8 @@ const PartTable = (props: any) => {
   };
 
   async function removePart(PartId: any, Partname: any) {
-    try {
-      const res = await fetch(`/api/parts/${PartId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: "no-store",
-      });
-      if (res.ok) {
-        showNotification({
-          title: "ลบรายการอ่ะไหล่สำเร็จ",
-          message: "ลบรายการอ่ะไหล่ " + Partname + " แล้ว",
-          color: "green",
-        });
-      } else {
-        showNotification({
-          title: "ลบรายการอ่ะไหล่ไม่สำเร็จ",
-          message: "เกิดข้อผิดพลาดในการลบอ่ะไหล่",
-          color: "red",
-        });
-      }
-    } catch (error: any) {
-      showNotification({
-        title: "เกิดข้อผิดพลาดในการลบอ่ะไหล่รถยนต์",
-        message: error.message,
-        color: "red",
-      });
-    }
+    setDelPart(Partname);
+    deleteMutation.mutate(PartId);
   }
 
   const rows = filteredParts?.map((Part: Part) => (
@@ -252,13 +248,12 @@ const PartTable = (props: any) => {
       {Part.amount === 0 ? (
         <Table.Td ta="center" align="center" c="red.9" fw={700}>
           {Part.amount}
-        </Table.Td> ) : (
+        </Table.Td>
+      ) : (
         <Table.Td ta="center" align="center" c="green.9" fw={700}>
           {Part.amount}
         </Table.Td>
-        )
-      }
-    
+      )}
 
       <Table.Td ta="center" align="center">
         <Group gap={"xs"}>
@@ -415,18 +410,17 @@ const PartTable = (props: any) => {
             />
           </Text>
         </Grid.Col>
-        <Grid.Col span={4}>{
-          Part.amount === 0 ? (
+        <Grid.Col span={4}>
+          {Part.amount === 0 ? (
             <Text size="sm" c="red.9" fw={700}>
               <b>จำนวณ : </b>
               {Part.amount}
             </Text>
           ) : (
-
-          <Text size="sm" c="green.9" fw={700}>
-            <b>จำนวณ : </b>
-            {Part.amount}
-          </Text>
+            <Text size="sm" c="green.9" fw={700}>
+              <b>จำนวณ : </b>
+              {Part.amount}
+            </Text>
           )}
         </Grid.Col>
       </Grid>
@@ -436,7 +430,6 @@ const PartTable = (props: any) => {
   let isLoading = PartLoading || TypeLoading || BrandLoading || CarLoading;
   let isError = PartError || TypeError || BrandError || CarError;
   const refetch = () => {
-    
     fetchPart();
     fetchType();
     fetchBrand();
@@ -459,7 +452,9 @@ const PartTable = (props: any) => {
                 <ActionIcon
                   variant="filled"
                   color="blue"
-                  onClick={() => {refetch()}}
+                  onClick={() => {
+                    refetch();
+                  }}
                   size="lg"
                 >
                   <IconRefresh />
@@ -599,7 +594,9 @@ const PartTable = (props: any) => {
                 <ActionIcon
                   variant="filled"
                   color="blue"
-                  onClick={() => {refetch()}}
+                  onClick={() => {
+                    refetch();
+                  }}
                   size="1.855rem"
                 >
                   <IconRefresh size={"1.3rem"} />
@@ -637,7 +634,6 @@ const PartTable = (props: any) => {
               placeholder="เลือกประเภท"
               label="เลือกประเภท"
               data={selectType}
-        
               defaultValue={"all"}
               onChange={(value) => setTypeofparts(value as string)}
               searchable
@@ -678,7 +674,7 @@ const PartTable = (props: any) => {
           </Group>
           {isLoading ? (
             <>
-               <Center mt={"30%"}>
+              <Center mt={"30%"}>
                 <Loader color="green" size={"xl"} />
               </Center>
               <Center>
@@ -688,19 +684,19 @@ const PartTable = (props: any) => {
             </>
           ) : isError ? (
             <>
-            <Center mt={"30%"}>
-              <IconExclamationCircle size={50} color="red" />
-            </Center>
-            <Center>
-              <Text fw={700}>เกิดข้อผิดพลาดในการเรียกข้อมูล</Text>
-            </Center>
+              <Center mt={"30%"}>
+                <IconExclamationCircle size={50} color="red" />
+              </Center>
+              <Center>
+                <Text fw={700}>เกิดข้อผิดพลาดในการเรียกข้อมูล</Text>
+              </Center>
 
-            <Center>
-              <Button variant="filled" radius="md" onClick={() => refetch()}>
-                ลองอีกครั้ง
-              </Button>
-            </Center>
-          </>
+              <Center>
+                <Button variant="filled" radius="md" onClick={() => refetch()}>
+                  ลองอีกครั้ง
+                </Button>
+              </Center>
+            </>
           ) : (
             <Stack gap={"xs"}> {mobileRows}</Stack>
           )}
@@ -718,7 +714,7 @@ const PartTable = (props: any) => {
         Code={modalCode}
         parts={Parts as Part[]}
       />
- 
+
       <EditPartModal
         opened={Editopened}
         onClose={closeEdit}
@@ -735,18 +731,15 @@ const PartTable = (props: any) => {
         typeofPart={modalSelectType}
         carBrand={modalSelectBrand}
         Cars={ModalCars}
-
       />
-           {/* 
+      
       <RestockPartModal
         opened={Restockopened}
         onClose={closeRestock}
         title={<Text fw={900}> เติมสินค้า {RestockPart.name} </Text>}
         Part={RestockPart}
         username={name as string}
-        fetchPart={fetchPart}
-        setParts={setParts}
-        parts={Parts as Part[]}
+    
       />
       <OutStockPartModal
         opened={OutStockopened}
@@ -754,10 +747,8 @@ const PartTable = (props: any) => {
         title={<Text fw={900}> เบิกสินค้า {RestockPart.name} </Text>}
         Part={RestockPart}
         username={name as string}
-        fetchPart={fetchPart}
-        setParts={setParts}
-        parts={Parts as Part[]}
-      /> */}
+   
+      />
     </Stack>
   );
 };

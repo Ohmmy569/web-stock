@@ -49,9 +49,9 @@ const NewPassModal: React.FC<ModalProps> = ({
     form.reset();
   }
 
-  const handlesubmit = async (data: any, UserId: string) => {
+  const handlesubmit = async (data: any, id: string) => {
     try {
-        const res = await axios.put(`/api/users/${UserId}`, {
+        const res = await axios.patch(`/api/users/${id}`, {
             password: data.password,
         });
         if(res.status === 200){

@@ -1,27 +1,20 @@
 "use client";
-import {
-  Box,
-  Button,
-  Center,
-  Group,
-  Modal,
-  NumberInput,
-} from "@mantine/core";
+import { Box, Button, Center, Group, Modal, NumberInput } from "@mantine/core";
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 import { Part } from "@/app/type";
 import { AddRehistory } from "@/app/calcu/addRehistory";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 interface ModalProps {
-  Part : Part;
+  Part: Part;
   opened: boolean;
   onClose: () => void;
   title: React.ReactNode;
-  username : string;
-  fetchPart : () => void;
-  setParts : (value : any[]) => void;
-  parts : Part[];
+  username: string;
 }
 
 const RestockPartModal: React.FC<ModalProps> = ({
@@ -30,9 +23,6 @@ const RestockPartModal: React.FC<ModalProps> = ({
   onClose,
   title,
   username,
-  fetchPart,
-  setParts,
-  parts,
 }) => {
   const schema = z.object({
     amount: z.number().min(0, { message: "กรุณากรอกจำนวน" }),
@@ -44,65 +34,56 @@ const RestockPartModal: React.FC<ModalProps> = ({
     },
     validate: zodResolver(schema),
   });
-
-  const handlesubmit = async (data: any , current : number , name : string , PartId : any) => {
-    try{
- 
-      const resRe = await fetch(`/api/instock/${PartId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: data.amount + current,
-        }),
+  const [AmountCurrent, setAmountCurrent] = useState(0);
+  const [AmountData, setAmountData] = useState(0);
+  const [name, setName] = useState("");
+  const queryClient = useQueryClient();
+  const Remutation = useMutation({
+    mutationFn: async (id: any) => {
+      await axios.put(`/api/instock/${id}`, {
+        amount: AmountCurrent + AmountData,
       });
-
-      if(resRe.ok){
-        await AddRehistory(
-          username,
-          Part.code,
-          Part.type,
-          Part.name,
-          data.amount,
-          Part.brand,
-          Part.costPrice,
-          Part.sellPrice,
-          "เติมสินค้า"
-        );
-        showNotification({
-          title: "เติมสินค้าสำเร็จ",
-          message: "เติมสินค้า " + name + " " + data.amount + " ชิ้น",
-          color: "blue",
-          icon: null,
-        });
-        form.reset();
-      }
-      else{
-        showNotification({
-          title: "เติมสินค้าไม่สำเร็จ",
-          message: "เกิดข้อผิดพลาดระหว่างเติมสินค้า",
-          color: "red",
-          icon: null,
-        });
-      }
-      setParts(
-        parts.map((parts) =>
-          parts._id === PartId ? { ...parts, amount: current + data.amount } : parts
-        )
-      )
-      fetchPart();
-      form.reset();
-    } catch (error) {
-  
-      form.reset();
+    },
+    onSuccess: async () => {
+      queryClient.invalidateQueries({ queryKey: ["parts"] });
+      await AddRehistory(
+        username,
+        Part.code,
+        Part.type,
+        Part.name,
+        AmountData,
+        Part.brand,
+        Part.costPrice,
+        Part.sellPrice,
+        "เติมสินค้า"
+      );
       showNotification({
-        title: "เติมอ่ะไหล่ไม่สำเร็จ",
-        message: "เกิดข้อผิดพลาดระหว่างเติมอ่ะไหล่" + error,
+        title: "เติมสินค้าสำเร็จ",
+        message: "เติมสินค้า " + name + " " + AmountData + " ชิ้น",
+        color: "blue",
+        icon: null,
+      });
+    },
+    onError: (error) => {
+      showNotification({
+        title: "เติมสินค้าไม่สำเร็จ",
+        message: "กรุณาลองใหม่อีกครั้ง",
         color: "red",
         icon: null,
       });
-    }
+    },
+  });
+
+  const handlesubmit = (
+    data: any,
+    current: number,
+    name: string,
+    PartId: any
+  ) => {
+    setAmountCurrent(current);
+    setAmountData(data.amount);
+    setName(name);
+    Remutation.mutate(PartId);
   };
 
   return (
@@ -111,22 +92,20 @@ const RestockPartModal: React.FC<ModalProps> = ({
         onSubmit={(event) => {
           event.preventDefault();
           form.onSubmit((data) => {
-            handlesubmit(data , Part.amount , Part.name , Part._id);
-            form.reset();
+            handlesubmit(data, Part.amount, Part.name, Part._id);
             onClose();
+            form.reset();
           })();
         }}
       >
         <Box>
           <NumberInput
-          description={"อยู่ในคลัง : " + Part?.amount + " ชิ้น"}
+            description={"อยู่ในคลัง : " + Part?.amount + " ชิ้น"}
             label="จำนวน"
             placeholder="จำนวน"
-            required
             {...form.getInputProps("amount")}
             min={0}
-            
-            />
+          />
           <Center>
             <Group justify="space-between" mt={15}>
               <Button color="green" mt="md" type="submit">
