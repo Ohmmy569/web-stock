@@ -4,15 +4,14 @@ import { Box, Button, Center, Group, Modal, TextInput } from "@mantine/core";
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import axios from "axios";
 
 interface ModalProps {
   opened: boolean;
   onClose: () => void;
   title: React.ReactNode;
   typeName: string[] | undefined;
-  fetchPartType: () => void;
-  types : string[];
-  setTypes : (value : any[]) => void;
 }
 
 const AddTypePartModal: React.FC<ModalProps> = ({
@@ -20,12 +19,8 @@ const AddTypePartModal: React.FC<ModalProps> = ({
   onClose,
   title,
   typeName,
-  fetchPartType,
-  types,
-  setTypes
 }) => {
   const TypeName = typeName || [];
-
   const schema = z.object({
     name: z
       .string()
@@ -48,53 +43,32 @@ const AddTypePartModal: React.FC<ModalProps> = ({
     validate: zodResolver(schema),
   });
 
-  const handlesubmit = async (data: any) => {
-    try {
-      if (TypeName.includes(data.name)) {
-        showNotification({
-          title: "ชื่อประเภทซ้ำ",
-          message: "กรุณากรอกชื่อประเภทใหม่",
-          color: "red",
-          icon: null,
-        });
-        return;
-      }
-
-      const resType = await fetch("/api/typeofparts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: data.name,
-        }),
-      });
-      if (resType.ok) {
-        showNotification({
-          title: "เพิ่มประเภทอ่ะไหล่สำเร็จ",
-          message: "เพิ่มประเภท " + data.name + " สำเร็จ",
-          color: "green",
-          icon: null,
-        });
-        form.reset();
-        setTypes([...types, data.name]);
-        fetchPartType();
-      } else {
-        showNotification({
-          title: "เพิ่มประเภทอ่ะไม่ไหล่สำเร็จ",
-          message: "เกิดข้อผิดพลาดระหว่างเพิ่มประเภทอ่ะไหล่",
-          color: "red",
-          icon: null,
-        });
-      }
-    } catch (error) {
+  const queryClient = useQueryClient();
+  const addMuntation = useMutation({
+    mutationFn: async (name: any) => {
+      await axios.post("/api/typeofparts", { name });
+    },
+    onSuccess: () => {
       showNotification({
         title: "เพิ่มประเภทอ่ะไหล่สำเร็จ",
+        message: "เพิ่มประเภทอ่ะไหล่เรียบร้อย",
+        color: "green",
+        icon: null,
+      });
+      queryClient.invalidateQueries({ queryKey: ["PartTypes"] });
+    },
+    onError: () => {
+      showNotification({
+        title: "เพิ่มประเภทอ่ะไหล่ไม่สำเร็จ",
         message: "เกิดข้อผิดพลาดระหว่างเพิ่มประเภทอ่ะไหล่",
         color: "red",
         icon: null,
       });
-    }
+    },
+  });
+
+  const handlesubmit = async (data: any) => {
+    addMuntation.mutate(data.name);
   };
 
   return (

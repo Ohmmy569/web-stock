@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActionIcon,
   Button,
   Card,
+  Center,
   Grid,
   Group,
+  Loader,
   Paper,
+  Space,
   Stack,
   Table,
   Text,
@@ -19,6 +22,7 @@ import {
   IconArticleFilled,
   IconPlus,
   IconRefresh,
+  IconExclamationCircle,
 } from "@tabler/icons-react";
 
 import { useDisclosure } from "@mantine/hooks";
@@ -28,10 +32,13 @@ import EditTypePartModal from "@components/TypePartModal/EditType";
 import { modals } from "@mantine/modals";
 import { showNotification } from "@mantine/notifications";
 import { PartType } from "@/app/type";
+import { UsePartType } from "../hooks/useType";
+import { useQueryClient , useMutation } from "@tanstack/react-query";
+import axios from "axios";
 
 const PartTypeTable = (props: any) => {
   let mobile = props.matches;
-  const [PartType, setPartType] = useState([] as any[] | undefined);
+
   const [TypeName, setTypeName] = useState([] as any[] | undefined);
 
   const [search, setSearch] = useState("");
@@ -41,28 +48,7 @@ const PartTypeTable = (props: any) => {
   const [Editopened, { open: openEdit, close: closeEdit }] =
     useDisclosure(false);
 
-  const fetchPartType = async () => {
-    const res = await fetch("/api/typeofparts", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    if (!res.ok) {
-      showNotification({
-        title: "เกิดข้อผิดพลาดในการดึงข้อมูลประเภทอ่ะไหล่",
-        message: "เกิดข้อผิดพลาดในการดึงข้อมูลประเภทอ่ะไหล่",
-        color: "red",
-      });
-      return;
-    }
-    const data = await res.json();
-    setPartType(data);
-  };
-
-  useEffect(() => {
-    fetchPartType();
-  }, []);
+  const { data : PartType, isLoading, isError, refetch } = UsePartType();
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let value = event.target.value.replace(/\s/g, "");
@@ -86,6 +72,31 @@ const PartTypeTable = (props: any) => {
     openAdd();
   }
 
+  const queryClient = useQueryClient();
+  const deleteMutation = useMutation({
+    mutationFn: async (id: any) => {
+      await axios.delete(`/api/typeofparts/${id}`);
+    },
+    onSuccess: () => {
+      showNotification({
+        title: "ลบประเภทอ่ะไหล่สำเร็จ",
+        message: "ลบประเภทอ่ะไหล่เรียบร้อย",
+        color: "blue",
+        icon: null,
+      });
+      queryClient.invalidateQueries({ queryKey: ["PartTypes"] });
+    },
+    onError: () => {
+      showNotification({
+        title: "ลบประเภทอ่ะไหล่ไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดระหว่างลบประเภทอ่ะไหล่",
+        color: "red",
+        icon: null,
+      });
+    },
+  });
+  const [delname , setDelname] = useState("");
+
   const openDeleteModal = (PartTypeId: any, Partname: any) => {
     modals.openConfirmModal({
       title: <Text fw={900}> ลบประเภทอ่ะไหล่ </Text>,
@@ -104,39 +115,10 @@ const PartTypeTable = (props: any) => {
       },
     });
   };
-  async function removePart(PartTypeId: any, PartTypename: any) {
-    try {
-      const res = await fetch(`/api/typeofparts/${PartTypeId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: "no-store",
-      });
-
-      if (res.ok) {
-        showNotification({
-          title: "ลบประเภทอ่ะไหล่สำเร็จ",
-          message: "ลบประเภท " + PartTypename + " สำเร็จ",
-          color: "blue",
-        });
-        fetchPartType();
-      } else {
-        showNotification({
-          title: "เกิดข้อผิดพลาดในการลบประเภทอ่ะไหล่รถยนต์",
-          message: "เกิดข้อผิดพลาดในการลบประเภทอ่ะไหล่รถยนต์",
-          color: "red",
-        });
-      }
-    } catch (error: any) {
-      showNotification({
-        title: "เกิดข้อผิดพลาดในการลบประเภทอ่ะไหล่รถยนต์",
-        message: error.message,
-        color: "red",
-      });
-    }
+   function removePart(PartTypeId: any, PartTypename: any) {
+    setDelname(PartTypename);
+    deleteMutation.mutate(PartTypeId);
   }
-  console.log("props", props);
 
   const rows = filteredParts?.map((PartType: PartType, index: number) => (
     <Table.Tr key={PartType._id}>
@@ -223,7 +205,7 @@ const PartTypeTable = (props: any) => {
                   variant="filled"
                   color="blue"
                   onClick={() => {
-                    fetchPartType();
+                    refetch();
                   }}
                   size="lg"
                 >
@@ -262,24 +244,51 @@ const PartTypeTable = (props: any) => {
             <Text>&nbsp;</Text>
           </Group>
 
-          <Paper shadow="sm" radius="md" p={"sm"} withBorder>
-            <Table
-              highlightOnHover
-              stickyHeader
-              striped
-              stickyHeaderOffset={55}
-            >
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th ta="center">ลำดับ</Table.Th>
-                  <Table.Th ta="center">ชื่อประเภท</Table.Th>
+          {isLoading ? (
+            <>
+              <Center mt={"8%"}>
+                <Loader color="green" size={"xl"} />
+              </Center>
+              <Center>
+                <Space h="md" />
+                <Text fw={700}>กำลังโหลดข้อมูล</Text>
+              </Center>
+            </>
+          ) : isError ? (
+            <>
+              <Center mt={"8%"}>
+                <IconExclamationCircle size={50} color="red" />
+              </Center>
+              <Center>
+                <Text fw={700}>เกิดข้อผิดพลาดในการเรียกข้อมูล</Text>
+              </Center>
 
-                  <Table.Th ta="center"> </Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>{rows}</Table.Tbody>
-            </Table>
-          </Paper>
+              <Center>
+                <Button variant="filled" radius="md" onClick={() => refetch()}>
+                  ลองอีกครั้ง
+                </Button>
+              </Center>
+            </>
+          ) : (
+            <Paper shadow="sm" radius="md" p={"sm"} withBorder>
+              <Table
+                highlightOnHover
+                stickyHeader
+                striped
+                stickyHeaderOffset={55}
+              >
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th ta="center">ลำดับ</Table.Th>
+                    <Table.Th ta="center">ชื่อประเภท</Table.Th>
+
+                    <Table.Th ta="center"> </Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>{rows}</Table.Tbody>
+              </Table>
+            </Paper>
+          )}
         </>
       ) : (
         <>
@@ -296,7 +305,7 @@ const PartTypeTable = (props: any) => {
                   variant="filled"
                   color="blue"
                   onClick={() => {
-                    fetchPartType();
+                    refetch();
                   }}
                   size="1.855rem"
                 >
@@ -318,21 +327,34 @@ const PartTypeTable = (props: any) => {
             </Group>
           </Group>
 
-          <Group mt={-10} grow>
-            <TextInput
-              label="ค้นหาทุกข้อมูล"
-              placeholder="ค้นหาทุกข้อมูล"
-              leftSection={
-                <IconSearch
-                  style={{ width: "1rem", height: "1rem" }}
-                  stroke={1.5}
-                />
-              }
-              value={search}
-              onChange={handleSearchChange}
-            />
-          </Group>
-          <Stack gap={"xs"}> {mobileRows}</Stack>
+          {isLoading ? (
+            <>
+              <Center mt={"30%"}>
+                <Loader color="green" size={"xl"} />
+              </Center>
+              <Center>
+                <Space h="md" />
+                <Text fw={700}>กำลังโหลดข้อมูล</Text>
+              </Center>
+            </>
+          ) : isError ? (
+            <>
+              <Center mt={"30%"}>
+                <IconExclamationCircle size={50} color="red" />
+              </Center>
+              <Center>
+                <Text fw={700}>เกิดข้อผิดพลาดในการเรียกข้อมูล</Text>
+              </Center>
+
+              <Center>
+                <Button variant="filled" radius="md" onClick={() => refetch()}>
+                  ลองอีกครั้ง
+                </Button>
+              </Center>
+            </>
+          ) : (
+            <Stack gap={"xs"}> {mobileRows}</Stack>
+          )}
         </>
       )}
 
@@ -341,9 +363,6 @@ const PartTypeTable = (props: any) => {
         onClose={closeAdd}
         title={<Text fw={900}> เพิ่มประเภทอะไหล่ </Text>}
         typeName={TypeName}
-        fetchPartType={fetchPartType}
-        types={PartType as any}
-        setTypes={setPartType}
       />
 
       <EditTypePartModal
@@ -352,9 +371,6 @@ const PartTypeTable = (props: any) => {
         title={<Text fw={900}> เพิ่มประเภทอะไหล่ </Text>}
         typeName={TypeName}
         TypePart={editPartType}
-        fetchPartType={fetchPartType}
-        types={PartType as any}
-        setTypes={setPartType}
       />
     </Stack>
   );

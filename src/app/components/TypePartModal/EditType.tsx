@@ -5,7 +5,9 @@ import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 
 import { PartType } from "@/app/type";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 interface ModalProps {
   opened: boolean;
@@ -13,9 +15,7 @@ interface ModalProps {
   title: React.ReactNode;
   typeName: string[] | undefined;
   TypePart: PartType;
-  fetchPartType: () => void;
-  types: string[];
-  setTypes: (value: any[]) => void;
+
 }
 
 const EditTypePartModal: React.FC<ModalProps> = ({
@@ -24,9 +24,7 @@ const EditTypePartModal: React.FC<ModalProps> = ({
   title,
   typeName,
   TypePart,
-  fetchPartType,
-  types,
-  setTypes,
+
 }) => {
   const TypeName = typeName || [];
 
@@ -55,54 +53,34 @@ const EditTypePartModal: React.FC<ModalProps> = ({
   useEffect(() => {
     form.setFieldValue("name", TypePart?.name || "");
   }, [TypePart]);
-
-  const handlesubmit = async (data: any, typePartId: any) => {
-    try {
-      if (TypeName.includes(data.name)) {
-        showNotification({
-          title: "ชื่อประเภทซ้ำ",
-          message: "กรุณากรอกชื่อประเภทใหม่",
-          color: "red",
-          icon: null,
-        });
-        return;
-      }
-
-      const res = await fetch(`/api/typeofparts/${typePartId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: data.name,
-        }),
-      });
-      if (res.ok) {
-        showNotification({
-          title: "แก้ไขประเภทอ่ะไหล่สำเร็จ",
-          message: "แก้ไขประเภท " + data.name + " สำเร็จ",
-          color: "green",
-          icon: null,
-        });
-        fetchPartType();
-        setTypes([...types, data.name]);
-        form.reset();
-      } else {
-        showNotification({
-          title: "แก้ไขประเภทอ่ะไหล่สำเร็จ",
-          message: "เกิดข้อผิดพลาดระหว่างแก้ไขประเภทอ่ะไหล่",
-          color: "red",
-          icon: null,
-        });
-      }
-    } catch (error) {
+  const [name , setName] = useState("");
+  const queryClient = useQueryClient();
+  const editMuntation = useMutation({
+    mutationFn: async (id: any) => {
+      await axios.put(`/api/typeofparts/${id}`, { name });
+    },
+    onSuccess: () => {
       showNotification({
         title: "แก้ไขประเภทอ่ะไหล่สำเร็จ",
-        message: "เกิดข้อผิดพลาดระหว่างแก้ไขประเภทอ่ะไหล่",
+        message: "แก้ไขประเภท "+ name +" อ่ะไหล่เรียบร้อย",
+        color: "green",
+        icon: null,
+      });
+      queryClient.invalidateQueries({ queryKey: ["PartTypes"] });
+    },
+    onError: () => {
+      showNotification({
+        title: "เพิ่มประเภทอ่ะไหล่ไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดระหว่างเพิ่มประเภทอ่ะไหล่",
         color: "red",
         icon: null,
       });
-    }
+    },
+  });
+
+  const handlesubmit = async (data: any , id : any) => {
+    setName(data.name);
+    editMuntation.mutate(id);
   };
 
   return (
@@ -112,8 +90,9 @@ const EditTypePartModal: React.FC<ModalProps> = ({
           event.preventDefault();
           form.onSubmit((data) => {
             handlesubmit(data, TypePart._id);
-            form.reset();
             onClose();
+            form.reset();
+         
           })();
         }}
       >
