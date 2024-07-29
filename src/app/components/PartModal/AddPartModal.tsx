@@ -187,7 +187,7 @@ const AddPartModal: React.FC<ModalProps> = ({
       >
         <Box>
           <TextInput
-            label="รหัสอ่ะไหล่sssssssssss"
+            label="รหัสอ่ะไหล่"
             placeholder="กรอกรหัสอ่ะไหล่"
             mb={"xs"}
             {...form.getInputProps("code")}
