@@ -54,7 +54,7 @@ const PartHistoryTable = (props: any) => {
   const rows = filteredHistory?.map((history: PartHistory, index: number) => (
     <Table.Tr key={history._id}>
       <Table.Td ta="center">
-        {index + 1 + " "}
+       
         {new Date(history.createdAt).toLocaleString()}
       </Table.Td>
       <Table.Td ta="center">{history.user}</Table.Td>
