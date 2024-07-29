@@ -12,7 +12,10 @@ import {
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
-import { Car } from "@/app/type"
+import { Car } from "@/app/type";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { useState } from "react";
 
 interface ModalProps {
   opened: boolean;
@@ -20,9 +23,6 @@ interface ModalProps {
   title: React.ReactNode;
   brandCarName: string[] | undefined;
   modelCarName: string[] | undefined;
-  fetchCar: () => void;
-  setCarsModelName: (value: any[]) => void;
-  allCars : Car[]
 }
 
 const AddCarModal: React.FC<ModalProps> = ({
@@ -31,9 +31,6 @@ const AddCarModal: React.FC<ModalProps> = ({
   title,
   modelCarName,
   brandCarName,
-  fetchCar,
-  setCarsModelName,
-  allCars
 }) => {
   const BrandCarName = brandCarName || [];
   const ModelCarName = modelCarName || [];
@@ -62,57 +59,39 @@ const AddCarModal: React.FC<ModalProps> = ({
     validate: zodResolver(schema),
   });
 
-  const handlesubmit = async (data: any) => {
-    try {
-      if (ModelCarName.includes(data.model)) {
-        showNotification({
-          title: "ยี่ห้อรถยนต์ซ้ำ",
-          message: "กรุณากรอกยี่ห้อรถยนต์ใหม่",
-          color: "red",
-          icon: null,
-        });
-        return;
-      }
-
-      const resType = await fetch("/api/modelcar", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          brand: data.brand,
-          model: data.model,
-        }),
+  const [brand, setBrand] = useState("");
+  const [model, setModel] = useState("");
+  const queryClient = useQueryClient();
+  const addMuntation = useMutation({
+    mutationFn: async () => {
+      await axios.post("/api/modelcar", {
+        brand: brand,
+        model: model,
       });
-      if (resType.ok) {
-        showNotification({
-          title: "เพิ่มยี่ห้อรถยนต์สำเร็จ",
-          message: "เพิ่มยี่ห้อรถยนต์สำเร็จ",
-          color: "green",
-          icon: null,
-        });
-        form.reset();
-        fetchCar();
-        setCarsModelName([...allCars, {
-          brand: data.brand,
-          model: data.model,
-        }]);
-      } else {
-        showNotification({
-          title: "เพิ่มยี่ห้อรถยนต์ไม่สำเร็จ",
-          message: "เกิดข้อผิดพลาดระหว่างเพิ่มยี่ห้อรถยนต์",
-          color: "red",
-          icon: null,
-        });
-      }
-    } catch (error) {
+    },
+    onSuccess: () => {
+      showNotification({
+        title: "เพิ่มยี่ห้อรถยนต์สำเร็จ",
+        message: "เพิ่มยี่ห้อรถยนต์ " + brand + " " + model + " เรียบร้อย",
+        color: "green",
+        icon: null,
+      });
+      queryClient.invalidateQueries({ queryKey: ["car"] });
+    },
+    onError: () => {
       showNotification({
         title: "เพิ่มยี่ห้อรถยนต์ไม่สำเร็จ",
         message: "เกิดข้อผิดพลาดระหว่างเพิ่มยี่ห้อรถยนต์",
         color: "red",
         icon: null,
       });
-    }
+    },
+  });
+
+  const handlesubmit = async (data: any) => {
+    setBrand(data.brand);
+    setModel(data.model);
+    addMuntation.mutate();
   };
 
   return (
@@ -122,8 +101,8 @@ const AddCarModal: React.FC<ModalProps> = ({
           event.preventDefault();
           form.onSubmit((data) => {
             handlesubmit(data);
-            form.reset();
             onClose();
+            form.reset();
           })();
         }}
       >

@@ -80,7 +80,7 @@ const PartTypeTable = (props: any) => {
     onSuccess: () => {
       showNotification({
         title: "ลบประเภทอ่ะไหล่สำเร็จ",
-        message: "ลบประเภทอ่ะไหล่เรียบร้อย",
+        message: "ลบประเภทอ่ะไหล่ " + delname + " เรียบร้อย",
         color: "blue",
         icon: null,
       });

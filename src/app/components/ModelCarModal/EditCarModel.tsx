@@ -13,7 +13,9 @@ import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 import { Car } from "@/app/type";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface ModalProps {
   opened: boolean;
@@ -21,10 +23,7 @@ interface ModalProps {
   title: React.ReactNode;
   brandCarName: string[] | undefined;
   modelCarName: string[] | undefined;
-  fetchCar: () => void;
   Cars: Car | undefined;
-  setCarsModelName: (value: any[]) => void;
-  allCars: Car[];
 }
 
 const EditCarModal: React.FC<ModalProps> = ({
@@ -33,10 +32,7 @@ const EditCarModal: React.FC<ModalProps> = ({
   title,
   modelCarName,
   brandCarName,
-  fetchCar,
   Cars,
-  setCarsModelName,
-  allCars,
 }) => {
   const BrandCarName = brandCarName || [];
   const ModelCarName = modelCarName || [];
@@ -70,60 +66,39 @@ const EditCarModal: React.FC<ModalProps> = ({
     form.setFieldValue("model", Cars?.name || "");
   }, [Cars]);
 
-  const handlesubmit = async (data: any, carID: any) => {
-    try {
-      if (ModelCarName.includes(data.model)) {
-        showNotification({
-          title: "ยี่ห้อรถยนต์ซ้ำ",
-          message: "กรุณากรอกยี่ห้อรถยนต์ใหม่",
-          color: "red",
-          icon: null,
-        });
-        return;
-      }
-
-      const resType = await fetch(`/api/modelcar/${carID}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          brand: data.brand,
-          model: data.model,
-        }),
+  const [brand, setBrand] = useState("");
+  const [model, setModel] = useState("");
+  const queryClient = useQueryClient();
+  const editMuntation = useMutation({
+    mutationFn: async (id: any) => {
+      await axios.put(`/api/modelcar/${id}`, {
+        brand: brand,
+        model: model,
       });
-      if (resType.ok) {
-        showNotification({
-          title: "เพิ่มยี่ห้อรถยนต์สำเร็จ",
-          message: "เพิ่มยี่ห้อรถยนต์สำเร็จ",
-          color: "green",
-          icon: null,
-        });
-        form.reset();
-        fetchCar();
-        setCarsModelName([
-          ...allCars,
-          {
-            brand: data.brand,
-            model: data.model,
-          },
-        ]);
-      } else {
-        showNotification({
-          title: "เพิ่มยี่ห้อรถยนต์ไม่สำเร็จ",
-          message: "เกิดข้อผิดพลาดระหว่างเพิ่มยี่ห้อรถยนต์",
-          color: "red",
-          icon: null,
-        });
-      }
-    } catch (error) {
+    },
+    onSuccess: () => {
       showNotification({
-        title: "เพิ่มยี่ห้อรถยนต์ไม่สำเร็จ",
-        message: "เกิดข้อผิดพลาดระหว่างเพิ่มยี่ห้อรถยนต์",
+        title: "แก้ไขยี่ห้อรถยนต์สำเร็จ",
+        message: "แก้ไขยี่ห้อรถยนต์ " + brand + " " + model + " เรียบร้อย",
+        color: "green",
+        icon: null,
+      });
+      queryClient.invalidateQueries({ queryKey: ["car"] });
+    },
+    onError: () => {
+      showNotification({
+        title: "แก้ไขยี่ห้อรถยนต์ไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดระหว่างแก้ไขยี่ห้อรถยนต์",
         color: "red",
         icon: null,
       });
-    }
+    },
+  });
+
+  const handlesubmit = async (data: any, carID: any) => {
+    setBrand(data.brand);
+    setModel(data.model);
+    editMuntation.mutate(carID);
   };
 
   return (

@@ -135,7 +135,7 @@ const UserTable = (props: any) => {
       showNotification({
         title: "ลบบัญชีผู้ใช้งานสำเร็จ",
         message: "ลบบัญชีผู้ใช้ " + Uname + " แล้ว",
-        color: "green",
+        color: "blue",
       });
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },

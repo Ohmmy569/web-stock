@@ -4,14 +4,15 @@ import { Box, Button, Center, Group, Modal, TextInput } from "@mantine/core";
 import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { useState } from "react";
 
 interface ModalProps {
   opened: boolean;
   onClose: () => void;
   title: React.ReactNode;
   BrandCarName: string[] | undefined;
-  fetchCarBrand: () => void;
-  setCarBrandName: (value: string[]) => void;
 }
 
 const AddBrandCarModal: React.FC<ModalProps> = ({
@@ -19,8 +20,6 @@ const AddBrandCarModal: React.FC<ModalProps> = ({
   onClose,
   title,
   BrandCarName,
-  fetchCarBrand,
-  setCarBrandName,
 }) => {
   const TypeName = BrandCarName || [];
 
@@ -45,55 +44,36 @@ const AddBrandCarModal: React.FC<ModalProps> = ({
     },
     validate: zodResolver(schema),
   });
-
-  const handlesubmit = async (data: any) => {
-    try {
-      if (TypeName.includes(data.name)) {
-        showNotification({
-          title: "ยี่ห้อรถยนต์ซ้ำ",
-          message: "กรุณากรอกยี่ห้อรถยนต์ใหม่",
-          color: "red",
-          icon: null,
-        });
-        return;
-      }
-
-      const resType = await fetch("/api/brandcar", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          brand: data.name,
-        }),
+  const [name , setName] = useState("");
+  const queryClient = useQueryClient();
+  const addMuntation = useMutation({
+    mutationFn : async (name : any) => {
+      await axios.post("/api/brandcar", {
+        brand: name,
       });
-      if (resType.ok) {
-        showNotification({
-            title: "เพิ่มยี่ห้อรถยนต์สำเร็จ",
-            message: "เพิ่มยี่ห้อรถยนต์สำเร็จ",
-            color: "green",
-            icon: null,
-        });
-        form.reset();
-
-        fetchCarBrand();
-        setCarBrandName([...TypeName, data.name]);
-      } else {
-        showNotification({
-            title: "เพิ่มยี่ห้อรถยนต์ไม่สำเร็จ",
-            message: "เกิดข้อผิดพลาดระหว่างเพิ่มยี่ห้อรถยนต์",
-            color: "red",
-            icon: null,
-        });
-      }
-    } catch (error) {
+    },
+    onSuccess : () => {
+      showNotification({
+        title: "เพิ่มยี่ห้อรถยนต์สำเร็จ",
+        message: "เพิ่มยี่ห้อรถยนต์ " + name + " เรียบร้อย",
+        color: "green",
+        icon: null,
+    });
+    queryClient.invalidateQueries({queryKey : ["brandcars"]});
+    },
+    onError : () => {
       showNotification({
         title: "เพิ่มยี่ห้อรถยนต์ไม่สำเร็จ",
         message: "เกิดข้อผิดพลาดระหว่างเพิ่มยี่ห้อรถยนต์",
         color: "red",
-        icon: null,
+        icon: null
       });
     }
+  });
+
+  const handlesubmit = async (data: any) => {
+    setName(data.name);
+    addMuntation.mutate(data.name);
   };
 
   return (

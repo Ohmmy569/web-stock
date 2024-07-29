@@ -140,7 +140,7 @@ const AddPartModal: React.FC<ModalProps> = ({
       queryClient.invalidateQueries({ queryKey: ["parts"] });
       showNotification({
         title: "เพิ่มอ่ะไหล่สำเร็จ",
-        message: "เพิ่มอ่ะไหล่เรียบร้อย",
+        message: "เพิ่มอ่ะไหล่ " + Sname  +  " เรียบร้อย",
         color: "green",
         icon: null,
       });
@@ -179,7 +179,6 @@ const AddPartModal: React.FC<ModalProps> = ({
         onSubmit={(event) => {
           event.preventDefault();
           form.onSubmit((data) => {
-            console.log("data", data);
             handlesubmit(data);
             onClose();
             form.reset();

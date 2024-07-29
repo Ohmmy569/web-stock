@@ -62,7 +62,7 @@ const EditTypePartModal: React.FC<ModalProps> = ({
     onSuccess: () => {
       showNotification({
         title: "แก้ไขประเภทอ่ะไหล่สำเร็จ",
-        message: "แก้ไขประเภท "+ name +" อ่ะไหล่เรียบร้อย",
+        message: "แก้ไขประเภท "+ name +" เรียบร้อย",
         color: "green",
         icon: null,
       });

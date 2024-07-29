@@ -45,7 +45,7 @@ const RestockPartModal: React.FC<ModalProps> = ({
       });
     },
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["parts"] });
+      queryClient.invalidateQueries({ queryKey: ["parts" , "history"] });
       await AddRehistory(
         username,
         Part.code,

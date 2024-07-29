@@ -56,7 +56,6 @@ const PartTable = (props: any) => {
   const [PartCode, setPartCode] = useState([] as any[] | undefined);
 
   const [search, setSearch] = useState("");
-  const [scrolled, setScrolled] = useState(false);
 
   const [editPart, setEditPart] = useState<Part>({} as Part);
   const [brand, setBrand] = useState("all");
@@ -183,7 +182,7 @@ const PartTable = (props: any) => {
       showNotification({
         title: "ลบรายการอ่ะไหล่สำเร็จ",
         message: "ลบรายการ "+ delPart + " แล้ว",
-        color: "green",
+        color: "blue",
       });
       queryClient.invalidateQueries({ queryKey: ["parts"] });
     },

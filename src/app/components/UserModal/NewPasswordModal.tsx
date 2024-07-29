@@ -34,7 +34,7 @@ const NewPassModal: React.FC<ModalProps> = ({
     })
     .refine((data) => data.password == data.ConfirmPassword, {
       message: "รหัสผ่านไม่ตรงกัน",
-      path: ["ConfirmPassword"], 
+      path: ["ConfirmPassword"],
     });
   const form = useForm({
     initialValues: {
@@ -51,33 +51,30 @@ const NewPassModal: React.FC<ModalProps> = ({
 
   const handlesubmit = async (data: any, id: string) => {
     try {
-        const res = await axios.patch(`/api/users/${id}`, {
-            password: data.password,
+      const res = await axios.patch(`/api/users/${id}`, {
+        password: data.password,
+      });
+      if (res.status === 200) {
+        showNotification({
+          title: "เปลี่ยนรหัสผ่านสำเร็จ",
+          message: "เปลี่ยนรหัสผ่าน " + users.email + " เรียบร้อย",
+          color: "green",
         });
-        if(res.status === 200){
-            showNotification({
-                title: "เปลี่ยนรหัสผ่านสำเร็จ",
-                message: `เปลี่ยนรหัสผ่านสำเร็จ`,
-                color: "green",
-            });
-        }
-        else{
-            showNotification({
-                title: "เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน",
-                message: "เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน",
-                color: "red",
-            });
-        }
-        onClosed();
-
-    }
-    catch (error: any) {
+      } else {
+        showNotification({
+          title: "เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน",
+          message: "เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน",
+          color: "red",
+        });
+      }
+      onClosed();
+    } catch (error: any) {
       showNotification({
         title: "เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน",
         message: error.message,
         color: "red",
       });
-        onClosed();
+      onClosed();
     }
   };
   return (

@@ -149,16 +149,16 @@ const EditPartModal: React.FC<ModalProps> = ({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["parts"] });
       showNotification({
-        title: "เพิ่มอ่ะไหล่สำเร็จ",
-        message: "เพิ่มอ่ะไหล่เรียบร้อย",
+        title: "แก้ไขอ่ะไหล่สำเร็จ",
+        message: "แก้ไขอ่ะไหล่ " + Sname + " เรียบร้อย",
         color: "green",
         icon: null,
       });
     },
     onError: () => {
       showNotification({
-        title: "เพิ่มอ่ไหล่ไม่สำเร็จ",
-        message: "เกิดข้อผิดพลาดระหว่างเพิ่มอ่ะไหล่",
+        title: "แก้ไขอ่ะไหล่ไม่สำเร็จ",
+        message: "เกิดข้อผิดพลาดระหว่างแก้ไขอ่ะไหล่",
         color: "red",
         icon: null,
       });

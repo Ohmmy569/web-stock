@@ -1,64 +1,34 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   ActionIcon,
+  Button,
   Card,
+  Center,
   Grid,
   Group,
+  Loader,
   Menu,
   Paper,
   Select,
+  Space,
   Stack,
   Table,
   Text,
   TextInput,
   Tooltip,
 } from "@mantine/core";
-import { IconSearch, IconHistory, IconRefresh } from "@tabler/icons-react";
+import { IconSearch, IconHistory, IconRefresh, IconExclamationCircle } from "@tabler/icons-react";
 
 import { PartHistory } from "@/app/type";
-import { showNotification } from "@mantine/notifications";
+import { UseHistory } from "../hooks/useHistory";
 
 const PartHistoryTable = (props: any) => {
   let mobile = props.matches;
-  const [History, setHistory] = useState([] as any[] | undefined);
   const [search, setSearch] = useState("");
+  const { data: History, isLoading, isError, refetch } = UseHistory();
 
   const [sortbyDate, setSortbyDate] = useState("desc");
   const [action, setAction] = useState("all");
-
-  const fetchHistory = async () => {
-    try {
-      const resHistory = await fetch("/api/addhistory", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!resHistory.ok) {
-        showNotification({
-          title: "เกิดข้อผิดพลาดในการดึงข้อมูลประวัติ",
-          message: "เกิดข้อผิดพลาดในการดึงข้อมูลประวัติ",
-          color: "red",
-        });
-        return;
-      }
-
-      const dataHistory = (await resHistory.json()) as History[];
-
-      setHistory(dataHistory);
-    } catch (error: any) {
-      showNotification({
-        title: "เกิดข้อผิดพลาดในการดึงข้อมูลประวัติ",
-        message: error.message,
-        color: "red",
-      });
-    }
-  };
-
-  useEffect(() => {
-    fetchHistory();
-  }, []);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let value = event.target.value.replace(/\s/g, "");
@@ -81,7 +51,7 @@ const PartHistoryTable = (props: any) => {
     }
   });
 
-  const rows = filteredHistory?.map((history: PartHistory,index : number) => (
+  const rows = filteredHistory?.map((history: PartHistory, index: number) => (
     <Table.Tr key={history._id}>
       <Table.Td ta="center">
         {index + 1 + " "}
@@ -188,7 +158,7 @@ const PartHistoryTable = (props: any) => {
                 variant="filled"
                 color="blue"
                 onClick={() => {
-                  fetchHistory();
+                  refetch();
                 }}
                 size="lg"
               >
@@ -235,26 +205,53 @@ const PartHistoryTable = (props: any) => {
             <Text>&nbsp;</Text>
           </Group>
 
-          <Paper shadow="sm" radius="md" p={"sm"} withBorder>
-            <Table
-              highlightOnHover
-              stickyHeader
-              striped
-              stickyHeaderOffset={55}
-            >
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th ta="center">วันที่ / เวลา</Table.Th>
-                  <Table.Th ta="center">ผู้ใช้</Table.Th>
-                  <Table.Th ta="center">การกระทำ</Table.Th>
-                  <Table.Th ta="center">รหัสอะไหล่</Table.Th>
-                  <Table.Th ta="center">ชื่ออะไหล่</Table.Th>
-                  <Table.Th ta="center">จำนวน</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>{rows}</Table.Tbody>
-            </Table>
-          </Paper>
+          {isLoading ? (
+            <>
+              <Center mt={"8%"}>
+                <Loader color="green" size={"xl"} />
+              </Center>
+              <Center>
+                <Space h="md" />
+                <Text fw={700}>กำลังโหลดข้อมูล</Text>
+              </Center>
+            </>
+          ) : isError ? (
+            <>
+              <Center mt={"8%"}>
+                <IconExclamationCircle size={50} color="red" />
+              </Center>
+              <Center>
+                <Text fw={700}>เกิดข้อผิดพลาดในการเรียกข้อมูล</Text>
+              </Center>
+
+              <Center>
+                <Button variant="filled" radius="md" onClick={() => refetch()}>
+                  ลองอีกครั้ง
+                </Button>
+              </Center>
+            </>
+          ) : (
+            <Paper shadow="sm" radius="md" p={"sm"} withBorder>
+              <Table
+                highlightOnHover
+                stickyHeader
+                striped
+                stickyHeaderOffset={55}
+              >
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th ta="center">วันที่ / เวลา</Table.Th>
+                    <Table.Th ta="center">ผู้ใช้</Table.Th>
+                    <Table.Th ta="center">การกระทำ</Table.Th>
+                    <Table.Th ta="center">รหัสอะไหล่</Table.Th>
+                    <Table.Th ta="center">ชื่ออะไหล่</Table.Th>
+                    <Table.Th ta="center">จำนวน</Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>{rows}</Table.Tbody>
+              </Table>
+            </Paper>
+          )}
         </>
       ) : (
         <>
@@ -270,7 +267,7 @@ const PartHistoryTable = (props: any) => {
                 variant="filled"
                 color="blue"
                 onClick={() => {
-                  fetchHistory();
+                  refetch();
                 }}
                 size="1.855rem"
               >
@@ -317,7 +314,34 @@ const PartHistoryTable = (props: any) => {
             />
             <Text>&nbsp;</Text>
           </Group>
-          <Stack gap={"xs"}> {mobileRows}</Stack>
+          {isLoading ? (
+            <>
+              <Center mt={"30%"}>
+                <Loader color="green" size={"xl"} />
+              </Center>
+              <Center>
+                <Space h="md" />
+                <Text fw={700}>กำลังโหลดข้อมูล</Text>
+              </Center>
+            </>
+          ) : isError ? (
+            <>
+              <Center mt={"30%"}>
+                <IconExclamationCircle size={50} color="red" />
+              </Center>
+              <Center>
+                <Text fw={700}>เกิดข้อผิดพลาดในการเรียกข้อมูล</Text>
+              </Center>
+
+              <Center>
+                <Button variant="filled" radius="md" onClick={() => refetch()}>
+                  ลองอีกครั้ง
+                </Button>
+              </Center>
+            </>
+          ) : (
+            <Stack gap={"xs"}> {mobileRows}</Stack>
+          )}
         </>
       )}
     </Stack>

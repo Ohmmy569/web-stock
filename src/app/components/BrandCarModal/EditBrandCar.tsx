@@ -5,15 +5,15 @@ import { z } from "zod";
 import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 import { CarBrand } from "@/app/type";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 interface ModalProps {
   opened: boolean;
   onClose: () => void;
   title: React.ReactNode;
   BrandCarName: string[] | undefined;
-  fetchCarBrand: () => void;
   BrandCar: CarBrand;
-  setCarBrandName: (value: string[]) => void;
 }
 
 const EditBrandCarModal: React.FC<ModalProps> = ({
@@ -21,9 +21,7 @@ const EditBrandCarModal: React.FC<ModalProps> = ({
   onClose,
   title,
   BrandCarName,
-  fetchCarBrand,
   BrandCar,
-  setCarBrandName,
 }) => {
   const TypeName = BrandCarName || [];
 
@@ -44,7 +42,7 @@ const EditBrandCarModal: React.FC<ModalProps> = ({
 
   const form = useForm({
     initialValues: {
-      name: BrandCar?.brand || ""
+      name: BrandCar?.brand || "",
     },
     validate: zodResolver(schema),
   });
@@ -53,54 +51,37 @@ const EditBrandCarModal: React.FC<ModalProps> = ({
     form.setFieldValue("name", BrandCar?.brand || "");
   }, [BrandCar]);
 
-  const handlesubmit = async (data: any , brandID : any) => {
-    try {
-      if (TypeName.includes(data.name)) {
-        showNotification({
-          title: "ยี่ห้อรถยนต์ซ้ำ",
-          message: "กรุณากรอกยี่ห้อรถยนต์ใหม่",
-          color: "red",
-          icon: null,
-        });
-        return;
-      }
+  const [name, setName] = useState("");
 
-      
-      const resType = await fetch(`/api/brandcar/${brandID}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          brand: data.name,
-        }),
+  const queryClient = useQueryClient();
+  const editMuntation = useMutation({
+    mutationFn: async (id: any) => {
+      await axios.put(`/api/brandcar/${id}`, {
+        brand: name,
       });
-      if (resType.ok) {
-        showNotification({
-            title: "แก้ไขยี่ห้อรถยนต์สำเร็จ",
-            message: "แก้ไขยี่ห้อรถยนต์สำเร็จ",
-            color: "green",
-            icon: null,
-        });
-        form.reset();
-        fetchCarBrand();
-        setCarBrandName([...TypeName, data.name]);
-      } else {
-        showNotification({
-            title: "แก้ไขยี่ห้อรถยนต์ไม่สำเร็จ",
-            message: "เกิดข้อผิดพลาดระหว่างแก้ไขยี่ห้อรถยนต์",
-            color: "red",
-            icon: null,
-        });
-      }
-    } catch (error) {
+    },
+    onSuccess: () => {
+      showNotification({
+        title: "แก้ไขยี่ห้อรถยนต์สำเร็จ",
+        message: "แก้ไขยี่ห้อรถยนต์ " + name + " เรียบร้อย",
+        color: "green",
+        icon: null,
+      });
+      queryClient.invalidateQueries({ queryKey: ["brandcars"] });
+    },
+    onError: () => {
       showNotification({
         title: "แก้ไขยี่ห้อรถยนต์ไม่สำเร็จ",
         message: "เกิดข้อผิดพลาดระหว่างแก้ไขยี่ห้อรถยนต์",
         color: "red",
         icon: null,
       });
-    }
+    },
+  });
+
+  const handlesubmit =  (data: any, brandID: any) => {
+    setName(data.name);
+    editMuntation.mutate(brandID);
   };
 
   return (
@@ -109,7 +90,7 @@ const EditBrandCarModal: React.FC<ModalProps> = ({
         onSubmit={(event) => {
           event.preventDefault();
           form.onSubmit((data) => {
-            handlesubmit(data , BrandCar._id);
+            handlesubmit(data, BrandCar._id);
             form.reset();
             onClose();
           })();

@@ -3,11 +3,14 @@ import {
   ActionIcon,
   Button,
   Card,
+  Center,
   Grid,
   Group,
+  Loader,
   Menu,
   Paper,
   rem,
+  Space,
   Stack,
   Table,
   Text,
@@ -22,6 +25,7 @@ import {
   IconRefresh,
   IconBrandToyota,
   IconDotsVertical,
+  IconExclamationCircle,
 } from "@tabler/icons-react";
 
 import { useDisclosure } from "@mantine/hooks";
@@ -31,11 +35,13 @@ import EditBrandCarModal from "./BrandCarModal/EditBrandCar";
 import { modals } from "@mantine/modals";
 import { showNotification } from "@mantine/notifications";
 import { CarBrand } from "@/app/type";
-import user from "@lib/models/user";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { UseBrandCar } from "../hooks/useBrand";
+import axios from "axios";
 
 const BrandTable = (props: any) => {
   let mobile = props.matches;
-  const [CarBrand, setCarBrand] = useState([] as any[] | undefined);
+
   const [BrandName, setBrandName] = useState([] as any[] | undefined);
 
   const [search, setSearch] = useState("");
@@ -45,28 +51,7 @@ const BrandTable = (props: any) => {
   const [Editopened, { open: openEdit, close: closeEdit }] =
     useDisclosure(false);
 
-  const fetchCarBrand = async () => {
-    const res = await fetch("/api/brandcar", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    if (!res.ok) {
-      showNotification({
-        title: "เกิดข้อผิดพลาดในการดึงข้อมูลยี่ห้อรถยนต์",
-        message: "เกิดข้อผิดพลาดในการดึงข้อมูลยี่ห้อรถยนต์",
-        color: "red",
-      });
-      return;
-    }
-    const data = await res.json();
-    setCarBrand(data);
-  };
-
-  useEffect(() => {
-    fetchCarBrand();
-  }, []);
+  const { data: CarBrand, isLoading, isError, refetch } = UseBrandCar();
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let value = event.target.value.replace(/\s/g, "");
@@ -79,7 +64,9 @@ const BrandTable = (props: any) => {
 
   function OpenEdit(CarBrandIN: CarBrand) {
     setEditCarBrand(CarBrandIN);
-    setBrandName(CarBrand?.filter((name) => name !== CarBrandIN.brand));
+    setBrandName(
+      CarBrand?.filter((carBrand) => carBrand.brand !== CarBrandIN.brand)
+    );
     openEdit();
   }
 
@@ -87,6 +74,29 @@ const BrandTable = (props: any) => {
     setBrandName(CarBrand?.map((CarBrand: CarBrand) => CarBrand.brand) || []);
     openAdd();
   }
+
+  const [delName , setDelName] = useState("");
+  const queryClient = useQueryClient();
+  const deleteMutation = useMutation({
+    mutationFn: async (id: any) => {
+      await axios.delete(`/api/brandcar/${id}`);
+    },
+    onSuccess: () => {
+      showNotification({
+        title: "ลบยี่ห้อรถยนต์สำเร็จ",
+        message: "ลบยี่ห้อ " + delName + " เรียบร้อย",
+        color: "blue",
+      });
+      queryClient.invalidateQueries({ queryKey: ["brandcars"] });
+    },
+    onError: () => {
+      showNotification({
+        title: "ลบยี่ห้อรถยนต์ไม่สำเร็จ",
+        message: "ลบยี่ห้อรถยนต์ไม่สำเร็จ",
+        color: "red",
+      });
+    },
+  });
 
   const openDeleteModal = (CarBrandId: any, Partname: any) => {
     modals.openConfirmModal({
@@ -108,37 +118,8 @@ const BrandTable = (props: any) => {
   };
 
   async function removePart(CarBrandId: any, CarBrandname: any) {
-    try {
-      const res = await fetch(`/api/brandcar/${CarBrandId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: "no-store",
-      });
-
-      if (res.ok) {
-        showNotification({
-          title: "ลบยี่ห้อรถยนต์",
-          message: "ลบยี่ห้อ " + CarBrandname + " สำเร็จ",
-          color: "blue",
-        });
-        setCarBrand(CarBrand?.filter((CarBrand) => CarBrand._id !== CarBrandId));
-        fetchCarBrand();
-      } else {
-        showNotification({
-          title: "เกิดข้อผิดพลาดในการลบยี่ห้อรถยนต์",
-          message: "เกิดข้อผิดพลาดในการลบยี่ห้อรถยนต์",
-          color: "red",
-        });
-      }
-    } catch (error: any) {
-      showNotification({
-        title: "เกิดข้อผิดพลาดในการลบยี่ห้อรถยนต์",
-        message: error.message,
-        color: "red",
-      });
-    }
+    setDelName(CarBrandname);
+    deleteMutation.mutate(CarBrandId);
   }
 
   const rows = filteredParts?.map((CarBrand: CarBrand, index: number) => (
@@ -226,7 +207,7 @@ const BrandTable = (props: any) => {
                   variant="filled"
                   color="blue"
                   onClick={() => {
-                    fetchCarBrand();
+                    refetch();
                   }}
                   size="lg"
                 >
@@ -247,41 +228,70 @@ const BrandTable = (props: any) => {
             </Group>
           </Group>
 
-          <Group mt={-10} grow>
-            <TextInput
-              label="ค้นหาทุกข้อมูล"
-              placeholder="ค้นหาทุกข้อมูล"
-              leftSection={
-                <IconSearch
-                  style={{ width: "1rem", height: "1rem" }}
-                  stroke={1.5}
-                />
-              }
-              value={search}
-              onChange={handleSearchChange}
-            />
-            <Text>&nbsp;</Text>
-            <Text>&nbsp;</Text>
-            <Text>&nbsp;</Text>
-          </Group>
-          <Paper shadow="sm" radius="md" p={"sm"} withBorder>
-            <Table
-              highlightOnHover
-              stickyHeader
-              striped
-              stickyHeaderOffset={55}
-            >
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th ta="center">ลำดับ</Table.Th>
-                  <Table.Th ta="center">ชื่อยี่ห้อรถยนต์</Table.Th>
+          {isLoading ? (
+            <>
+              <Center mt={"8%"}>
+                <Loader color="green" size={"xl"} />
+              </Center>
+              <Center>
+                <Space h="md" />
+                <Text fw={700}>กำลังโหลดข้อมูล</Text>
+              </Center>
+            </>
+          ) : isError ? (
+            <>
+              <Center mt={"8%"}>
+                <IconExclamationCircle size={50} color="red" />
+              </Center>
+              <Center>
+                <Text fw={700}>เกิดข้อผิดพลาดในการเรียกข้อมูล</Text>
+              </Center>
 
-                  <Table.Th ta="center"> </Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>{rows}</Table.Tbody>
-            </Table>
-          </Paper>
+              <Center>
+                <Button variant="filled" radius="md" onClick={() => refetch()}>
+                  ลองอีกครั้ง
+                </Button>
+              </Center>
+            </>
+          ) : (
+            <>
+              <Group mt={-10} grow>
+                <TextInput
+                  label="ค้นหาทุกข้อมูล"
+                  placeholder="ค้นหาทุกข้อมูล"
+                  leftSection={
+                    <IconSearch
+                      style={{ width: "1rem", height: "1rem" }}
+                      stroke={1.5}
+                    />
+                  }
+                  value={search}
+                  onChange={handleSearchChange}
+                />
+                <Text>&nbsp;</Text>
+                <Text>&nbsp;</Text>
+                <Text>&nbsp;</Text>
+              </Group>
+              <Paper shadow="sm" radius="md" p={"sm"} withBorder>
+                <Table
+                  highlightOnHover
+                  stickyHeader
+                  striped
+                  stickyHeaderOffset={55}
+                >
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th ta="center">ลำดับ</Table.Th>
+                      <Table.Th ta="center">ชื่อยี่ห้อรถยนต์</Table.Th>
+
+                      <Table.Th ta="center"> </Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>{rows}</Table.Tbody>
+                </Table>
+              </Paper>
+            </>
+          )}
         </>
       ) : (
         <>
@@ -298,7 +308,7 @@ const BrandTable = (props: any) => {
                   variant="filled"
                   color="blue"
                   onClick={() => {
-                    fetchCarBrand();
+                    refetch();
                   }}
                   size="1.855rem"
                 >
@@ -334,7 +344,34 @@ const BrandTable = (props: any) => {
               onChange={handleSearchChange}
             />
           </Group>
-          <Stack gap={"xs"}> {mobileRows}</Stack>
+          {isLoading ? (
+            <>
+              <Center mt={"30%"}>
+                <Loader color="green" size={"xl"} />
+              </Center>
+              <Center>
+                <Space h="md" />
+                <Text fw={700}>กำลังโหลดข้อมูล</Text>
+              </Center>
+            </>
+          ) : isError ? (
+            <>
+              <Center mt={"30%"}>
+                <IconExclamationCircle size={50} color="red" />
+              </Center>
+              <Center>
+                <Text fw={700}>เกิดข้อผิดพลาดในการเรียกข้อมูล</Text>
+              </Center>
+
+              <Center>
+                <Button variant="filled" radius="md" onClick={() => refetch()}>
+                  ลองอีกครั้ง
+                </Button>
+              </Center>
+            </>
+          ) : (
+            <Stack gap={"xs"}> {mobileRows}</Stack>
+          )}
         </>
       )}
 
@@ -343,8 +380,6 @@ const BrandTable = (props: any) => {
         onClose={closeAdd}
         title={<Text fw={900}>เพิ่มยี่ห้อรถยนต์</Text>}
         BrandCarName={BrandName}
-        fetchCarBrand={fetchCarBrand}
-        setCarBrandName={setBrandName}
       />
 
       <EditBrandCarModal
@@ -353,8 +388,6 @@ const BrandTable = (props: any) => {
         title={<Text fw={900}> เพิ่มประเภทอะไหล่ </Text>}
         BrandCarName={BrandName}
         BrandCar={editCarBrand}
-        fetchCarBrand={fetchCarBrand}
-        setCarBrandName={setBrandName}
       />
     </Stack>
   );

@@ -6,6 +6,7 @@ import { useForm, zodResolver } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import { useState } from "react";
 
 interface ModalProps {
   opened: boolean;
@@ -43,6 +44,7 @@ const AddTypePartModal: React.FC<ModalProps> = ({
     validate: zodResolver(schema),
   });
 
+  const [name , setName] = useState("");
   const queryClient = useQueryClient();
   const addMuntation = useMutation({
     mutationFn: async (name: any) => {
@@ -51,7 +53,7 @@ const AddTypePartModal: React.FC<ModalProps> = ({
     onSuccess: () => {
       showNotification({
         title: "เพิ่มประเภทอ่ะไหล่สำเร็จ",
-        message: "เพิ่มประเภทอ่ะไหล่เรียบร้อย",
+        message: "เพิ่มประเภท " + name + " เรียบร้อย",
         color: "green",
         icon: null,
       });
@@ -68,6 +70,7 @@ const AddTypePartModal: React.FC<ModalProps> = ({
   });
 
   const handlesubmit = async (data: any) => {
+    setName(data.name);
     addMuntation.mutate(data.name);
   };
 
