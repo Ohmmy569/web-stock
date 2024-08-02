@@ -23,6 +23,7 @@ interface ModalProps {
   onClose: () => void;
   title: React.ReactNode;
   Nameusers: string[];
+  invlidate: () => void;
 }
 
 const AddUserModal: React.FC<ModalProps> = ({
@@ -30,6 +31,7 @@ const AddUserModal: React.FC<ModalProps> = ({
   onClose,
   title,
   Nameusers,
+  invlidate,
 
 }) => {
   const [Email, setEmail] = useState("");
@@ -87,6 +89,7 @@ const AddUserModal: React.FC<ModalProps> = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      invlidate();
       
       showNotification({
         title: "เพิ่มผู้ใช้งานสำเร็จ",

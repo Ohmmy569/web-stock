@@ -1,8 +1,8 @@
 "use client";
-import React, { use, useEffect } from "react";
+import  { useState } from "react";
 import { useForm } from "@mantine/form";
 import { zodResolver } from "mantine-form-zod-resolver";
-import { signIn, signOut } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import {
@@ -11,14 +11,11 @@ import {
   Box,
   Button,
   TextInput,
-  createTheme,
-  MantineProvider,
   Center,
   rem,
   PasswordInput,
-  Text,
   Image,
-  Notification,
+  Loader,
 } from "@mantine/core";
 import { IconX, IconCheck } from "@tabler/icons-react";
 import { showNotification } from "@mantine/notifications";
@@ -50,9 +47,11 @@ export default function Page() {
     validate: zodResolver(schema),
   });
 
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const handlesubmit = async (data: account) => {
     try {
+      setIsLoading(true);
       const email = data.username + "@gmail.com";
       const password = data.password;
 
@@ -62,7 +61,9 @@ export default function Page() {
         redirect: false,
       
       });
+      
       if (res?.error) {
+        setIsLoading(false);
         showNotification({
           title: "เข้าสู่ระบบไม่สำเร็จ",
           message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
@@ -101,7 +102,7 @@ export default function Page() {
               event.preventDefault();
               form.onSubmit((data) => {
                 handlesubmit(data);
-                form.reset();
+         
               })();
             }}
           >
@@ -143,7 +144,7 @@ export default function Page() {
               />
               <Center>
                 <Button color="#070b91" fullWidth mt="md" type="submit">
-                  Log In
+                  {isLoading ? (<Loader color="white" size={"sm"} />) : "Log In"}
                 </Button>
               </Center>
             </Box>

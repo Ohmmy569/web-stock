@@ -125,6 +125,9 @@ const UserTable = (props: any) => {
       </Table.Td>
     </Table.Tr>
   ));
+  const invlidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["users"] });
+  };
   const [Uname, setUname] = useState("");
   const queryClient = useQueryClient();
   const deleteMutation = useMutation({
@@ -426,6 +429,7 @@ const UserTable = (props: any) => {
         onClose={closeAdd}
         title={<Text fw={900}> เพิ่มผู้ใช้งาน </Text>}
         Nameusers={nameEmail}
+        invlidate={invlidate}
       />
 
       <EditUserModal
@@ -435,6 +439,7 @@ const UserTable = (props: any) => {
         users={editUser}
         Nameusers={editNameEmail}
         Users={users as User[]}
+        invlidate={invlidate}
       />
 
       <NewPassModal

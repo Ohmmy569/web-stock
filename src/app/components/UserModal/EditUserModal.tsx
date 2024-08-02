@@ -25,6 +25,7 @@ interface ModalProps {
   users: User;
   Nameusers: string[] | undefined;
   Users : User[];
+  invlidate: () => void;
 }
 
 const EditUserModal: React.FC<ModalProps> = ({
@@ -33,7 +34,8 @@ const EditUserModal: React.FC<ModalProps> = ({
   title,
   users,
   Nameusers,
-  Users
+  Users,
+  invlidate,
 }) => {
   const [Email, setEmail] = useState("");
   const [Role, setRole] = useState("");
@@ -91,6 +93,7 @@ const EditUserModal: React.FC<ModalProps> = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      invlidate();
       showNotification({
         title: "แก้ไขผู้ใช้งานสำเร็จ",
         message: "แก้ไขผู้ใช้งาน " + Email + " สำเร็จ",
