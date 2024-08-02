@@ -57,13 +57,13 @@ const UserTable = (props: any) => {
   );
   const nameEmail = users?.map((user: User) => user.email) as string[];
 
-  const { data, isLoading, isError, refetch } = UseUser();
+  const { data : dataUser, isLoading, isError, refetch } = UseUser();
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
   };
 
-  const filteredUsers = data?.filter((user: User) =>
+  const filteredUsers = dataUser?.filter((user: User) =>
     Object.values(user).some(
       (value) =>
         typeof value === "string" &&
@@ -127,12 +127,13 @@ const UserTable = (props: any) => {
   ));
   const invlidate = () => {
     queryClient.invalidateQueries({ queryKey: ["users"] });
+    
   };
   const [Uname, setUname] = useState("");
   const queryClient = useQueryClient();
   const deleteMutation = useMutation({
     mutationFn: async (id: any) => {
-      await axios.delete(`/api/users/${id}`);
+      await axios.delete(`/api/usersMember/${id}`);
     },
     onSuccess: () => {
       showNotification({
@@ -140,7 +141,7 @@ const UserTable = (props: any) => {
         message: "ลบบัญชีผู้ใช้ " + Uname + " แล้ว",
         color: "blue",
       });
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["usersMember"] });
     },
     onError: () => {
       showNotification({

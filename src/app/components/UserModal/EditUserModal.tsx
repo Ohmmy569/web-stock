@@ -86,13 +86,13 @@ const EditUserModal: React.FC<ModalProps> = ({
   const queryClient = useQueryClient();
   const editMutation = useMutation({
     mutationFn: async () => {
-      const res = await axios.put(`/api/users/${id}`, {
+      const res = await axios.put(`/api/usersMember/${id}`, {
         email: Email,
         role: Role,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["usersMember"] });
       invlidate();
       showNotification({
         title: "แก้ไขผู้ใช้งานสำเร็จ",

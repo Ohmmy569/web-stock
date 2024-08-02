@@ -81,14 +81,14 @@ const AddUserModal: React.FC<ModalProps> = ({
   const queryClient = useQueryClient();
   const addMutation = useMutation({
     mutationFn: async () => {
-      const res = await axios.post("/api/register", {
+      const res = await axios.post("/api/registerMember", {
         email: Email,
         password: Password,
         role: Role,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["usersMember"] });
       invlidate();
       
       showNotification({
