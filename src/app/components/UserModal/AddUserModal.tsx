@@ -87,6 +87,7 @@ const AddUserModal: React.FC<ModalProps> = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      
       showNotification({
         title: "เพิ่มผู้ใช้งานสำเร็จ",
         message: "เพิ่มผู้ใช้ " + Email + " เรียบร้อย",

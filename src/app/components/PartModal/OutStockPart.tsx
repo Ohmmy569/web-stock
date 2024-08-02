@@ -51,7 +51,8 @@ const OutStockPartModal: React.FC<ModalProps> = ({
       });
     },
     onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ["parts" , "history"] });
+      queryClient.invalidateQueries({ queryKey: ["parts"] });
+      queryClient.invalidateQueries({ queryKey: ["history"] });
       await AddOuhistory(
         username,
         Part.code,
