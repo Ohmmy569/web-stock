@@ -18,4 +18,7 @@ export const createUserBodySchema = z.object({
   }),
 });
 
-export type createUserBodyType = z.infer<typeof createUserBodySchema>;
+export const loginBodySchema = z.object({
+  email: z.string({ message: 'Email is required' }),
+  password: z.string({ message: 'Password is required' }),
+});

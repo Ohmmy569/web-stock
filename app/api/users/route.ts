@@ -3,9 +3,17 @@ import { users } from '@/db/schema';
 import * as brypt from 'bcryptjs';
 import { createUserBodySchema } from '@/lib/type';
 import { ZodError } from 'zod';
-import { parseJsonBody, returnErrorResponse } from '@/lib/helper-function';
+import { parseJsonBody, errorResponse } from '@/lib/helper-function';
 export async function GET() {
-  const allUsers = await db.select().from(users);
+  const allUsers = await db
+    .select({
+      id: users.id,
+      email: users.email,
+      role: users.role,
+      createOn: users.createOn,
+      updateOn: users.updateOn,
+    })
+    .from(users);
   return new Response(
     JSON.stringify({
       message: 'Users retrieved successfully',
@@ -40,7 +48,10 @@ export async function POST(request: Request) {
     return new Response(
       JSON.stringify({
         message: 'User created successfully',
-        data: newUser,
+        data: {
+          ...newUser[0],
+          password: undefined,
+        },
       }),
       {
         status: 201,
@@ -48,6 +59,6 @@ export async function POST(request: Request) {
       }
     );
   } catch (error) {
-    return returnErrorResponse(error);
+    return errorResponse(error);
   }
 }
