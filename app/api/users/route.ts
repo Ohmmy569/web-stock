@@ -1,9 +1,60 @@
 import { db } from '@/db/index';
 import { users } from '@/db/schema';
 import * as brypt from 'bcryptjs';
-import { createUserBodySchema } from '@/lib/type';
+import { createUserBodySchema } from '@/utils/type';
 import { ZodError } from 'zod';
-import { parseJsonBody, errorResponse } from '@/lib/helper-function';
+import { parseJsonBody, errorResponse } from '@/utils/helper-function';
+
+/**
+ * @swagger
+ * /api/users:
+ * get:
+ * summary: Retrieve a list of users
+ * tags: [Users]
+ * responses:
+ * 200:
+ * description: A list of users
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * message:
+ * type: string
+ * data:
+ * type: array
+ * items:
+ * type: object
+ * properties:
+ * id:
+ * type: string
+ * email:
+ * type: string
+ * role:
+ * type: string
+ * createOn:
+ * type: string
+ * updateOn:
+ * type: string
+ * post:
+ * summary: Create a new user
+ * tags: [Users]
+ * requestBody:
+ * required: true
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * email:
+ * type: string
+ * password:
+ * type: string
+ * responses:
+ * 201:
+ * description: User created successfully
+ */
+
 export async function GET() {
   const allUsers = await db
     .select({
