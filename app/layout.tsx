@@ -1,14 +1,19 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import './globals.css';
-import { TRPCProvider } from '@/trpc/client';
+
 import { MantineProvider } from '@mantine/core';
-import { theme } from '@/utils/theme';
-import { Notifications } from '@mantine/notifications';
 import { ModalsProvider } from '@mantine/modals';
+import { Notifications } from '@mantine/notifications';
+
+import { TRPCProvider } from '@/trpc/client';
+import { theme } from '@/utils/theme';
+
+import './globals.css';
+
 import '@mantine/core/styles.css';
 import '@mantine/dropzone/styles.css';
 import '@mantine/notifications/styles.css';
+
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],

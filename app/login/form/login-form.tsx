@@ -1,7 +1,8 @@
 'use client';
+import { Box, Button, Center, PasswordInput, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { zodResolver } from 'mantine-form-zod-resolver';
-import { Box, Button, TextInput, Center, PasswordInput } from '@mantine/core';
+
 import { LoginFormValues, loginSchema } from './schema';
 
 interface LoginFormProps {

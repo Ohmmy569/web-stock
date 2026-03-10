@@ -1,9 +1,10 @@
+import * as brypt from 'bcryptjs';
+import { ZodError } from 'zod';
+
 import { db } from '@/db/index';
 import { users } from '@/db/schema';
-import * as brypt from 'bcryptjs';
+import { errorResponse, parseJsonBody } from '@/utils/helper-function';
 import { createUserBodySchema } from '@/utils/type';
-import { ZodError } from 'zod';
-import { parseJsonBody, errorResponse } from '@/utils/helper-function';
 
 /**
  * @swagger

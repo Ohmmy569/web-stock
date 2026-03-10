@@ -1,15 +1,16 @@
+import * as brypt from 'bcryptjs';
+import { eq } from 'drizzle-orm';
+import { ZodError } from 'zod';
+
 import { db } from '@/db/index';
 import { users } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-import * as brypt from 'bcryptjs';
-import { loginBodySchema } from '@/utils/type';
-import { ZodError } from 'zod';
 import {
-  parseJsonBody,
   errorResponse,
   notFoundException,
+  parseJsonBody,
   unauthorizedException,
 } from '@/utils/helper-function';
+import { loginBodySchema } from '@/utils/type';
 
 export async function POST(request: Request) {
   try {

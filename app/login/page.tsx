@@ -1,12 +1,15 @@
 'use client';
 import { useState } from 'react';
-import { Card, Container, Center, rem, Image } from '@mantine/core';
-import { IconX, IconCheck } from '@tabler/icons-react';
-import { showNotification } from '@mantine/notifications';
-import { authClient } from '@/utils/auth/auth-client';
-import { LoginFormValues } from './form/schema';
-import { LoginForm } from './form/login-form';
+
+import { Card, Center, Container, Image, rem } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
+import { showNotification } from '@mantine/notifications';
+import { IconCheck, IconX } from '@tabler/icons-react';
+
+import { authClient } from '@/utils/auth/auth-client';
+
+import { LoginForm } from './form/login-form';
+import { LoginFormValues } from './form/schema';
 
 export default function Page() {
   const xIcon = <IconX style={{ width: rem(20), height: rem(20) }} />;
