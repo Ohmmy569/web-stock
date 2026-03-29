@@ -88,7 +88,7 @@ export default function DashboardLayout({
   return (
     <section>
       <AppShell
-        header={{ height: 55 }}
+        header={{ height: 45 }}
         navbar={{
           width: 240,
           breakpoint: 'sm',
@@ -112,8 +112,8 @@ export default function DashboardLayout({
             <Image
               alt="Banner"
               width={'100%'}
-              height={'80%'}
-              maw={200}
+              height={'90%'}
+              maw={170}
               radius="md"
               src="/nav-icon.png"
             />
@@ -142,32 +142,35 @@ export default function DashboardLayout({
                       event?.preventDefault();
                     }}
                     color={'#4746ED'}
-                    fw={900}
+                    fw={500}
                     p={10}
+                    h={45}
                   />
                 );
               })}
             </Box>
           </AppShell.Section>
           <AppShell.Section pb={5}>
-            <Divider p={5} size={2} />
+            <Divider p={5} size={1} />
             <Box>
               <NavLink
                 label={session?.user?.email}
                 leftSection={<IconUser size="2rem" stroke={2} />}
                 color={'myblue'}
                 c={'myblue'}
-                fw={900}
+                fw={500}
                 p={10}
+                h={45}
               />
               <NavLink
-                label={<strong>ออกจากระบบ</strong>}
+                label={'ออกจากระบบ'}
                 leftSection={<IconLogout size="2rem" stroke={2} />}
                 onClick={() => LogOut()}
                 color={'red'}
                 c={'red'}
-                fw={900}
+                fw={500}
                 p={10}
+                h={45}
               />
             </Box>
           </AppShell.Section>
