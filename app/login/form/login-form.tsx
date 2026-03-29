@@ -28,18 +28,12 @@ export function LoginForm({ onSubmit, isLoading }: LoginFormProps) {
         <PasswordInput
           label="รหัสผ่าน"
           placeholder="กรอกรหัสผ่าน"
-          mb="xs"
+          mb="md"
           {...form.getInputProps('password')}
         />
         <Center>
-          <Button
-            color="#070b91"
-            fullWidth
-            mt="md"
-            type="submit"
-            loading={isLoading}
-          >
-            Log In
+          <Button color="#070b91" fullWidth type="submit" loading={isLoading}>
+            เข้าสู่ระบบ
           </Button>
         </Center>
       </Box>

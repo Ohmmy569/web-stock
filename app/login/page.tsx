@@ -24,7 +24,7 @@ export default function Page() {
       const res = await authClient.signIn.email({
         email: data.username,
         password: data.password,
-        callbackURL: '/dashboard/parts',
+        callbackURL: '/part',
       });
 
       if (res.error) {
@@ -33,6 +33,7 @@ export default function Page() {
           message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
           color: 'red',
           icon: xIcon,
+          withBorder: true,
         });
       } else {
         showNotification({
@@ -40,6 +41,7 @@ export default function Page() {
           message: 'เข้าสู่ระบบสำเร็จ',
           color: 'green',
           icon: checkIcon,
+          withBorder: true,
         });
       }
     } catch (error) {
@@ -49,6 +51,7 @@ export default function Page() {
         message: 'เกิดข้อผิดพลาดระหว่างเข้าสู่ระบบ',
         color: 'yellow',
         icon: xIcon,
+        withBorder: true,
       });
     } finally {
       setIsLoading(false);
@@ -58,7 +61,7 @@ export default function Page() {
   return (
     <Container size="responsive" py={70}>
       <Center>
-        <Card bg="#F8F9FA" shadow="xs" padding="lg" withBorder w={500}>
+        <Card shadow="xs" padding="lg" withBorder w={500}>
           {matches ? (
             <Image
               alt="Banner"
